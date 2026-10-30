@@ -1,0 +1,8 @@
+{
+  "id": "s05-10",
+  "title": "Zwei Kreuze in Vierteln",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridPoints": [[0,0],[12,0],[12,12],[0,12],[6,0],[6,12],[0,6],[12,6]],
+  "targetLines": [[[6,0],[6,12]], [[0,6],[12,6]], [[6,12],[12,6]], [[6,6],[12,12]], [[0,6],[6,0]], [[0,0],[6,6]]],
+  "note": "Der Mittelpunkt (6,6) ist kein Rasterpunkt. Er entsteht als Schnittpunkt der Mittellinien und muss zuerst zum magnetischen Punkt gemacht werden."
+}

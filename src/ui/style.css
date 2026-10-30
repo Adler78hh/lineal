@@ -1,0 +1,478 @@
+:root {
+  /* Squared paper (5 mm boxes), lines light blue with a touch of petrol. */
+  --paper: #fbfdfd;
+  --paper-line: rgb(70 150 168 / 0.3);
+  --paper-box: 20px;
+  --card: #ffffff;
+  --ink: #23324a;
+  --muted: #6b7689;
+  --accent: #2f6fb3;
+  --accent-soft: #dfeaf7;
+  --frame: #23324a;
+  --grid-point: #2f6fb3;
+  --target-line: #23324a;
+  --snap: #f08a00;
+  --radius: 16px;
+  --ruler-fill: rgb(150 212 226 / 0.5);
+  --ruler-border: rgb(42 132 152 / 0.75);
+  --ruler-ink: #17697a;
+  --pencil: #2b3442;
+  --made-point: #2e9e5b;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: var(--paper-box) var(--paper-box);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app,
+.app {
+  height: 100%;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  gap: 10px;
+}
+
+/* Top bar */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.task-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 10em;
+  text-align: center;
+}
+
+.task-no {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.task-title {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 64px;
+  min-height: 56px;
+  padding: 6px 10px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn.icon-only {
+  min-width: 56px;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--snap);
+  outline-offset: 2px;
+}
+
+/* Template left, board right – or stacked on a portrait screen. */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(160px, 27%) 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+}
+
+.stage .target {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.stage .board {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+@media (orientation: portrait) {
+  .stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(140px, 24%) 1fr;
+  }
+
+  .stage .board {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+.card {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+}
+
+.target {
+  align-self: start;
+  aspect-ratio: 1;
+  max-height: 100%;
+  padding: 6px;
+}
+
+@media (orientation: portrait) {
+  .target {
+    justify-self: center;
+    height: 100%;
+  }
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+.figure {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: block;
+}
+
+.board .figure {
+  touch-action: none;
+}
+
+/* Figure parts */
+.frame polygon,
+.frame circle {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.target .frame polygon,
+.target .frame circle {
+  stroke-width: 2;
+}
+
+.target-lines line {
+  stroke: var(--target-line);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.grid-points circle {
+  fill: var(--grid-point);
+}
+
+/* Ruler: see-through light blue plastic, the drawing edge is the darker long side. */
+.ruler-body {
+  fill: var(--ruler-fill);
+  stroke: var(--ruler-border);
+  stroke-width: 1.5;
+  cursor: grab;
+}
+
+.ruler-edge {
+  stroke: var(--ruler-ink);
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+
+.ruler-ticks {
+  stroke: var(--ruler-ink);
+  opacity: 0.8;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.ruler-handle {
+  cursor: alias;
+}
+
+.ruler-handle circle {
+  fill: rgb(255 255 255 / 0.85);
+  stroke: var(--ruler-border);
+  stroke-width: 2;
+}
+
+.ruler-handle .arrow {
+  fill: none;
+  stroke: var(--ruler-ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.snap-mark {
+  fill: none;
+  stroke: var(--snap);
+  stroke-width: 4;
+  pointer-events: none;
+}
+
+/* Held by two points: the ruler gets an orange border. */
+.ruler-fixed .ruler-body {
+  stroke: var(--snap);
+  stroke-width: 2.5;
+}
+
+.pin line {
+  stroke: #9a5200;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.pin circle {
+  fill: var(--snap);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+/* Grows round while a finger stays on an orange point; full circle = pinned. */
+.press-ring {
+  fill: none;
+  stroke: var(--snap);
+  stroke-width: 4;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  pointer-events: none;
+  animation: press-fill 0.6s linear forwards;
+}
+
+@keyframes press-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.snap-mark.pinned {
+  fill: rgb(240 138 0 / 0.35);
+}
+
+/* Drawn with the pencil. */
+.drawn-lines line {
+  stroke: var(--pencil);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.stroke-preview {
+  stroke: var(--pencil);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* Grid points made from crossings: green, so they stand apart from the original ones. */
+.grid-points circle.made {
+  fill: var(--made-point);
+}
+
+/* The little "+" on a tapped crossing: tap it to make the crossing a grid point. */
+.cross-offer circle.halo {
+  fill: none;
+  stroke: var(--made-point);
+  stroke-width: 3;
+  stroke-dasharray: 4 4;
+}
+
+.cross-offer .badge {
+  cursor: pointer;
+}
+
+.cross-offer .badge circle {
+  fill: var(--made-point);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.cross-offer .badge path {
+  stroke: #fff;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+/* While erasing, the ruler rests: faded and not in the way. */
+.ruler-idle {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.figure.erasing {
+  cursor: cell;
+}
+
+.eraser-spot {
+  fill: rgb(240 138 0 / 0.15);
+  stroke: var(--snap);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  pointer-events: none;
+}
+
+/* Feedback after "Prüfen" */
+.missing-lines line {
+  stroke: #7f9cb3;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 3 9;
+  pointer-events: none;
+}
+
+.extra-lines line {
+  stroke: rgb(222 60 82 / 0.38);
+  stroke-width: 14;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* Under the template when there is room beside the board, else floating at the bottom of the board. */
+.feedback {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 1.05rem;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 0.15);
+  cursor: pointer;
+}
+
+.feedback[hidden] {
+  display: none;
+}
+
+.feedback.good {
+  background: #e3f6ea;
+  color: #1d6b3e;
+}
+
+.feedback.almost {
+  background: #fff4e0;
+  color: #7a4a00;
+}
+
+.feedback .big {
+  font-size: 1.6rem;
+}
+
+.feedback .next {
+  flex-direction: row;
+  min-height: 44px;
+  gap: 4px;
+  color: #1d6b3e;
+}
+
+@media (orientation: portrait) {
+  .feedback {
+    position: absolute;
+    z-index: 1;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 28px);
+  }
+}
+
+/* Safari 14 has no aspect-ratio: give the template a fixed height instead. */
+@supports not (aspect-ratio: 1) {
+  .target {
+    height: 30vh;
+  }
+}
+
+#boot-error {
+  max-width: 36em;
+  margin: 15vh auto;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+}
+
+#boot-error .detail {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
