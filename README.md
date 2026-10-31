@@ -51,6 +51,49 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Offline: Beim ersten Besuch speichert der Service Worker die ganze App (die Dateiliste erzeugt `vite.config.ts` beim Bauen). Seiten kommen zuerst aus dem Netz (für Updates), sonst aus dem Speicher.
   - Ältere iPads: Build für Safari 14, Hinweis statt weißer Seite, wenn die App nicht startet.
 
+## Startseite und Blöcke
+
+Die Startseite zeigt die fünf Blöcke des Buchs mit ihren Seiten. Jede Aufgabe ist ein kleines Bild
+ihrer Figur, gelöste Aufgaben haben einen Stern. Das Haus oben links führt zurück.
+
+Die Blöcke stehen in `tasks/blocks.json` (Titel und Seitenbereich). Zu welcher Seite eine Aufgabe
+gehört, ergibt sich aus ihrer `id`: `s05-03` ist die 3. Aufgabe auf Seite 5.
+
+| Block | Seiten |
+| --- | --- |
+| Einstieg ins geometrische Zeichnen | 5–20 |
+| Sterne | 21–36 |
+| Muster in Quadraten | 37–50 |
+| Hüllkurven | 51–64 |
+| 3-D-Bilder | 65–78 |
+
+## Aufgaben
+
+Jede Datei in `tasks/` (außer `blocks.json`) ist eine Aufgabe; sie werden nach `id` sortiert.
+Koordinaten 0–12, Ursprung unten links.
+
+```json
+{
+  "id": "s05-03",
+  "title": "3 Streifen mit Diagonale",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridPoints": [[0,0],[12,0],[12,12],[0,12],[0,4],[12,4],[0,8],[12,8]],
+  "targetLines": [[[0,4],[12,4]], [[0,8],[12,8]], [[0,12],[12,0]]]
+}
+```
+
+Optional ist `note`: ein Hinweis für die Lehrkraft, z. B. dass ein Endpunkt erst
+als Schnittpunkt entsteht und zum Rasterpunkt gemacht werden muss (s05-10).
+
+Rahmen-Typen:
+
+- `{ "type": "rect", "w": 12, "h": 12 }`
+- `{ "type": "circle", "n": 8 }`: Kreis mit n gleich verteilten Rasterpunkten
+- `{ "type": "polygon", "n": 6 }`: regelmäßiges n-Eck, die Ecken sind Rasterpunkte
+
+Kreis und n-Eck haben optional `cx`, `cy` (Standard 6, 6), `r` (Standard 6) und
+`rotation` in Grad (Standard 90: erster Punkt oben).
+
 ## Veröffentlichen
 
 Bei jedem Push auf `main` testet und baut GitHub Actions die App und veröffentlicht sie
