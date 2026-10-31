@@ -8,6 +8,7 @@ export const icons = {
   eraser: icon('<path d="M4 15.5l9-9a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L13 19.5H8z"/><path d="M8.5 11l5.5 5.5M13 19.5h7"/>'),
   undo: icon('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'),
   check: icon('<path d="M4 12.5l5 5L20 6.5"/>'),
+  home: icon('<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5"/>'),
   prev: icon('<path d="M15 5l-7 7 7 7"/>'),
   next: icon('<path d="M9 5l7 7-7 7"/>'),
 };

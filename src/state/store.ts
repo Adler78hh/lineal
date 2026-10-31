@@ -7,6 +7,8 @@ import { tasks } from './tasks';
 export type Tool = 'ruler' | 'eraser';
 
 export interface AppState {
+  /** The start page with all tasks, or one task. */
+  screen: 'home' | 'task';
   taskIndex: number;
   /** Not remembered: the app always starts with the ruler. */
   tool: Tool;
@@ -16,6 +18,8 @@ export interface AppState {
   drawings: Record<string, Segment[]>;
   /** Crossings the child turned into grid points, per task id. */
   madePoints: Record<string, Vec[]>;
+  /** Tasks the check found right at least once (they get a star on the start page). */
+  solved: Record<string, boolean>;
 }
 
 type Listener = (s: AppState) => void;
@@ -23,19 +27,30 @@ type Listener = (s: AppState) => void;
 const STORAGE_KEY = 'lineal.v1';
 
 function load(): AppState {
-  const fallback: AppState = { taskIndex: 0, tool: 'ruler', showGrid: true, showRuler: true, drawings: {}, madePoints: {} };
+  const fallback: AppState = {
+    screen: 'home',
+    taskIndex: 0,
+    tool: 'ruler',
+    showGrid: true,
+    showRuler: true,
+    drawings: {},
+    madePoints: {},
+    solved: {},
+  };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<AppState> | null;
     if (!saved) return fallback;
     const taskIndex = Number.isInteger(saved.taskIndex) ? Math.min(Math.max(saved.taskIndex!, 0), tasks.length - 1) : 0;
     const record = <T>(v: Record<string, T> | undefined): Record<string, T> => (v && typeof v === 'object' ? v : {});
     return {
+      screen: saved.screen === 'task' ? 'task' : 'home',
       taskIndex,
       tool: 'ruler',
       showGrid: saved.showGrid !== false,
       showRuler: saved.showRuler !== false,
       drawings: record(saved.drawings),
       madePoints: record(saved.madePoints),
+      solved: record(saved.solved),
     };
   } catch {
     return fallback;
@@ -127,4 +142,12 @@ export const canUndo = (): boolean => (history[currentTask().id]?.length ?? 0) >
 export function undo(): void {
   const last = history[currentTask().id]?.pop();
   if (last) change(last.lines, last.made);
+}
+
+export const openTask = (index: number): void => setState({ screen: 'task', taskIndex: index, tool: 'ruler' });
+
+export const openHome = (): void => setState({ screen: 'home' });
+
+export function markSolved(id: string): void {
+  if (!state.solved[id]) setState({ solved: { ...state.solved, [id]: true } });
 }

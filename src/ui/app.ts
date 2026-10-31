@@ -10,14 +10,19 @@ import {
   erase,
   getState,
   makePoint,
+  markSolved,
+  openHome,
+  openTask,
   setState,
   subscribe,
   undo,
 } from '../state/store';
+import { placeOf } from '../state/blocks';
 import { tasks } from '../state/tasks';
 import { renderFigure } from './figure';
 import { icons } from './icons';
 import { Board } from './board';
+import { renderHome } from './home';
 
 interface ToolButton {
   key: string;
@@ -37,9 +42,11 @@ const TOOLS: ToolButton[] = [
 
 export function mountApp(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="app">
+    <div class="home" hidden></div>
+    <div class="app" hidden>
       <header class="bar">
         <div class="task-nav">
+          <button class="btn icon-only" data-home aria-label="Zur Übersicht">${icons.home}</button>
           <button class="btn icon-only" data-nav="-1" aria-label="Vorige Aufgabe">${icons.prev}</button>
           <div class="task-label"><span class="task-no"></span><span class="task-title"></span></div>
           <button class="btn icon-only" data-nav="1" aria-label="Nächste Aufgabe">${icons.next}</button>
@@ -63,6 +70,8 @@ export function mountApp(root: HTMLElement): void {
       </main>
     </div>`;
 
+  const home = root.querySelector<HTMLElement>('.home')!;
+  const app = root.querySelector<HTMLElement>('.app')!;
   const targetSvg = root.querySelector<SVGSVGElement>('.target svg')!;
   const boardSvg = root.querySelector<SVGSVGElement>('.board svg')!;
   const taskNo = root.querySelector<HTMLElement>('.task-no')!;
@@ -92,6 +101,7 @@ export function mountApp(root: HTMLElement): void {
       if (i >= 0 && i < tasks.length) setState({ taskIndex: i });
     }),
   );
+  root.querySelector('[data-home]')!.addEventListener('click', openHome);
   gridBtn.addEventListener('click', () => setState({ showGrid: !getState().showGrid }));
   // With the eraser on, "Lineal" switches back to the ruler; otherwise it shows or hides it.
   rulerBtn.addEventListener('click', () => {
@@ -104,6 +114,7 @@ export function mountApp(root: HTMLElement): void {
     const task = currentTask();
     const lines = currentLines();
     feedback = { result: checkDrawing(lines, task.targetLines, task.frame), lines, taskId: task.id };
+    if (feedback.result.done) markSolved(task.id);
     render();
   });
   feedbackBox.addEventListener('click', (e) => {
@@ -111,11 +122,15 @@ export function mountApp(root: HTMLElement): void {
       setState({ taskIndex: Math.min(getState().taskIndex + 1, tasks.length - 1) });
       return;
     }
+    if ((e.target as Element).closest('[data-to-home]')) {
+      openHome();
+      return;
+    }
     feedback = null;
     render();
   });
   window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+    if (getState().screen === 'task' && (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       undo();
     }
@@ -123,8 +138,15 @@ export function mountApp(root: HTMLElement): void {
 
   function render(): void {
     const s = getState();
+    home.hidden = s.screen !== 'home';
+    app.hidden = s.screen !== 'task';
+    if (s.screen === 'home') {
+      renderHome(home, s, openTask);
+      return;
+    }
     const task = currentTask();
-    taskNo.textContent = `Aufgabe ${s.taskIndex + 1} von ${tasks.length}`;
+    const place = placeOf(s.taskIndex);
+    taskNo.textContent = `${place.page === null ? '' : `Seite ${place.page} · `}Aufgabe ${place.n} von ${place.of}`;
     taskTitle.textContent = task.title;
     taskTitle.title = task.title;
     prevBtn.disabled = s.taskIndex === 0;
@@ -163,7 +185,9 @@ function showFeedback(box: HTMLElement, r: CheckResult | null, hasNext: boolean,
   box.className = `feedback ${r.done ? 'good' : 'almost'}`;
   if (r.done) {
     box.innerHTML = `<span class="big">⭐</span><span>Super! Alles richtig.</span>${
-      hasNext ? `<button class="btn next" data-next>Nächste Aufgabe ${icons.next}</button>` : ''
+      hasNext
+        ? `<button class="btn next" data-next>Nächste Aufgabe ${icons.next}</button>`
+        : `<button class="btn next" data-to-home>Zur Übersicht ${icons.home}</button>`
     }`;
     return;
   }

@@ -480,3 +480,148 @@ body {
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+/* hidden must win over display: flex/grid of the views. */
+[hidden] {
+  display: none !important;
+}
+
+/* ---- Start page ---- */
+.home {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.home > * {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.home-head img {
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+}
+
+.home-head h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.home-head p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.block {
+  padding: 14px 18px 18px;
+  margin-bottom: 16px;
+}
+
+.block h2 {
+  color: var(--ink);
+  text-align: left;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+}
+
+.block-no {
+  display: inline-grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  background: var(--ruler-ink);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.block-pages {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.block .soon {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.page h3 {
+  margin: 10px 0 8px;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.task-tile {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 96px;
+  padding: 8px;
+  border: 2px solid #dce6ea;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.task-tile:hover {
+  border-color: var(--ruler-border);
+}
+
+.task-tile:focus-visible {
+  outline: 3px solid var(--snap);
+  outline-offset: 2px;
+}
+
+.task-tile.solved {
+  border-color: #9fd8b3;
+  background: #f3fbf6;
+}
+
+.task-tile .thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.task-tile .thumb .target-lines line {
+  stroke-width: 2;
+}
+
+.tile-no {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tile-star {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 1rem;
+}

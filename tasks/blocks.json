@@ -1,0 +1,7 @@
+[
+  { "id": "einstieg", "title": "Einstieg ins geometrische Zeichnen", "pages": [5, 20] },
+  { "id": "sterne", "title": "Sterne", "pages": [21, 36] },
+  { "id": "muster", "title": "Muster in Quadraten", "pages": [37, 50] },
+  { "id": "huellkurven", "title": "Hüllkurven", "pages": [51, 64] },
+  { "id": "3d", "title": "3-D-Bilder", "pages": [65, 78] }
+]

@@ -21,7 +21,7 @@
       (function () {
         function show(msg) {
           var el = document.getElementById('boot-error');
-          if (!el || document.querySelector('#app .app')) return;
+          if (!el || document.querySelector('#app .app, #app .home')) return;
           el.hidden = false;
           el.innerHTML =
             '<h1>Die App konnte nicht starten.</h1>' +
@@ -37,7 +37,7 @@
         });
         window.addEventListener('load', function () {
           setTimeout(function () {
-            if (!document.querySelector('#app .app')) show('Die Oberfläche wurde nicht geladen.');
+            if (!document.querySelector('#app .app, #app .home')) show('Die Oberfläche wurde nicht geladen.');
           }, 4000);
         });
       })();
