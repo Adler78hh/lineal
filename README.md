@@ -82,17 +82,42 @@ Koordinaten 0–12, Ursprung unten links.
 }
 ```
 
-Optional ist `note`: ein Hinweis für die Lehrkraft, z. B. dass ein Endpunkt erst
-als Schnittpunkt entsteht und zum Rasterpunkt gemacht werden muss (s05-10).
+Weitere Felder, alle optional:
+
+| Feld | Bedeutung |
+| --- | --- |
+| `note` | Hinweis für die Lehrkraft, z. B. dass ein Endpunkt erst als Schnittpunkt entsteht (s05-10) |
+| `gridStyle` | `"dots"` (Standard) oder `"ticks"`: Rasterpunkte auf Rahmen oder vorgegebenen Strecken erscheinen als Markierungsstriche |
+| `givenLines` | Strecken, die schon da sind wie der Rahmen (z. B. eine Strecke mit 20 Teilen, s12-01) |
+| `helpLines` | Hilfslinien, die das Buch zum Zeichnen und Wiederwegradieren vorschlägt; sie werden nicht angezeigt, aber getestet |
+| `areas` | Flächen zum Ausmalen (schwarz), als Vielecke. Dann erscheint das Werkzeug „Ausmalen“, und Prüfen vergleicht auch die Flächen. |
 
 Rahmen-Typen:
 
-- `{ "type": "rect", "w": 12, "h": 12 }`
-- `{ "type": "circle", "n": 8 }`: Kreis mit n gleich verteilten Rasterpunkten
+- `{ "type": "rect", "w": 12, "h": 12 }`: Rechteck, auch hochkant (z. B. 8 × 12)
+- `{ "type": "circle", "n": 8 }`: Kreis mit n gleich verteilten Rasterpunkten; mit `"visible": false` wird der Kreis nicht gezeichnet (nur seine Markierungen, s14-01)
 - `{ "type": "polygon", "n": 6 }`: regelmäßiges n-Eck, die Ecken sind Rasterpunkte
+- `{ "type": "open", "w": 12, "h": 12 }`: kein Rahmen
 
 Kreis und n-Eck haben optional `cx`, `cy` (Standard 6, 6), `r` (Standard 6) und
 `rotation` in Grad (Standard 90: erster Punkt oben).
+
+Ein Test prüft für jede Aufgabe, dass sich alle Ziellinien mit dem Lineal zeichnen lassen:
+von Rasterpunkten aus, über Schnittpunkte von Linien zwischen zwei Rasterpunkten und über
+Schnittpunkte von Ziel-, Hilfs- und vorgegebenen Linien. Für Aufgaben mit Flächen prüft ein
+weiterer Test, dass die Flächen genau zu den Feldern der Zeichnung passen.
+
+### Aufgaben aus einer Figurensammlung übernehmen
+
+Die Seiten 6–15 stammen aus einer Figurensammlung im Format `figuren_*.json` (Ursprung oben
+links, y nach unten, beliebige Größe). Das Skript rechnet sie um:
+
+```sh
+node scripts/import-figuren.mjs figuren_s6-15.json
+```
+
+Es dreht die y-Achse um, skaliert die längere Seite auf 12, ersetzt gerundete Kreis- und
+Schnittpunkte durch exakte Werte und schreibt `tasks/sPP-NN.json` (z. B. `6-1` → `s06-01`).
 
 ## Veröffentlichen
 
@@ -113,7 +138,7 @@ npm run build    # statische Seite in dist/
 
 - `src/geometry/`: reine Mathematik ohne DOM, mit Tests
   - Punkte, Aufgaben einlesen, Bildschirm-Abbildung, Schnittpunkte
-  - `segments.ts`: Teilstrecken; `frame.ts`: Rahmen; `draw.ts`: vom Wisch zur Linie; `crossings.ts`: Kreuzungen der Zeichnung; `erase.ts`: Radierer; `check.ts`: Prüfen
+  - `segments.ts`: Teilstrecken; `frame.ts`: Rahmen; `draw.ts`: vom Wisch zur Linie; `crossings.ts`: Kreuzungen der Zeichnung; `erase.ts`: Radierer; `faces.ts`: Flächen zum Ausmalen; `check.ts`: Prüfen
   - `ruler.ts`: Lage des Lineals und Einrasten
   - `gesture.ts`: Bewegung aus Finger-Gesten
 - `src/state/`: Aufgabenliste, App-Zustand, `rulerModel.ts` (Drehpunkt-Logik ohne DOM, mit Tests)

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { tasks } from '../state/tasks';
-import { checkDrawing, uncovered } from './check';
+import { checkDrawing, checkFills, uncovered } from './check';
+import { boundaryLines, faces, insidePolygon, interiorPoint, polygonArea } from './faces';
 import { addLine, sameSegment } from './segments';
-import { type Segment, vec } from './vec';
+import { type Segment, type Vec, vec } from './vec';
 
 const seg = (ax: number, ay: number, bx: number, by: number): Segment => ({ a: vec(ax, ay), b: vec(bx, by) });
 const draw = (lines: Segment[], points = tasks[0].gridPoints) => lines.reduce<Segment[]>((p, l) => addLine(p, l, points), []);
@@ -50,5 +51,26 @@ describe('checkDrawing', () => {
     expect(r.missing).toEqual([]);
     expect(r.extra).toHaveLength(1);
     expect(sameSegment(r.extra[0], seg(0, 0, 12, 12))).toBe(true);
+  });
+});
+
+describe('checkFills on the task files', () => {
+  const withAreas = tasks.filter((t) => t.areas.length);
+
+  it('there are tasks to fill in', () => {
+    expect(withAreas.length).toBeGreaterThan(0);
+  });
+
+  it.each(withAreas.map((t) => [t.id, t] as const))('%s: target lines plus the filled areas are right', (_, t) => {
+    const drawn = draw(t.targetLines, t.gridPoints);
+    const all = faces(boundaryLines(t.frame, t.givenLines, drawn, t.gridPoints));
+    // The child taps every face that lies in a target area (an area may be cut into several).
+    const wanted = all.filter((f) => t.areas.some((a) => insidePolygon(a, interiorPoint(f))));
+    expect(checkFills(all, wanted.map(interiorPoint), t.areas)).toEqual({ missing: [], extra: [] });
+    // Those faces make up exactly the target areas.
+    const sum = (list: Vec[][]) => list.reduce((n, p) => n + Math.abs(polygonArea(p)), 0);
+    expect(sum(wanted)).toBeCloseTo(sum(t.areas), 1);
+    // Nothing filled: every area is missing.
+    expect(checkFills(all, [], t.areas).missing.length).toBeGreaterThan(0);
   });
 });

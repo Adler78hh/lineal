@@ -1,3 +1,4 @@
+import { faceAt, insidePolygon, interiorPoint } from './faces';
 import { frameSides } from './frame';
 import { paramOn } from './segments';
 import type { Frame } from './task';
@@ -64,10 +65,39 @@ export function joinStraight(pieces: readonly Segment[], tol = CHECK_TOL): Segme
   return out;
 }
 
-/** Compares the drawing with the target figure. */
-export function checkDrawing(drawn: readonly Segment[], targets: readonly Segment[], frame: Frame): CheckResult {
-  const allowed = [...targets, ...(frame.kind === 'polygon' ? frameSides(frame) : [])];
+/** Compares the drawing with the target figure. Lines along the frame or along given lines are no mistake. */
+export function checkDrawing(
+  drawn: readonly Segment[],
+  targets: readonly Segment[],
+  frame: Frame,
+  given: readonly Segment[] = [],
+): CheckResult {
+  const allowed = [...targets, ...frameSides(frame), ...given];
   const missing = joinStraight(targets.flatMap((t) => uncovered(t, drawn)));
   const extra = joinStraight(drawn.flatMap((d) => uncovered(d, allowed)));
   return { missing, extra, done: missing.length === 0 && extra.length === 0 };
+}
+
+export interface FillResult {
+  /** Areas that should be filled in but are not. */
+  missing: Vec[][];
+  /** Areas filled in that should stay white. */
+  extra: Vec[][];
+}
+
+/**
+ * Compares filled areas with the target: every face of the drawing whose inside lies in a
+ * target area must be filled, every other face must stay white. `seeds` are the points the
+ * child tapped to fill.
+ */
+export function checkFills(all: readonly Vec[][], seeds: readonly Vec[], areas: readonly Vec[][]): FillResult {
+  const result: FillResult = { missing: [], extra: [] };
+  for (const face of all) {
+    const inside = interiorPoint(face);
+    const wanted = areas.some((a) => insidePolygon(a, inside));
+    const filled = seeds.some((p) => faceAt(all, p) === face);
+    if (wanted && !filled) result.missing.push(face);
+    if (filled && !wanted) result.extra.push(face);
+  }
+  return result;
 }

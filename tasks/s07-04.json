@@ -1,0 +1,10 @@
+{
+  "id": "s07-04",
+  "title": "Kreuz mit Einkerbungen",
+  "note": "Kerbpunkte stehen nicht im Raster; sie liegen mittig zwischen zwei Markierungen, 1 Einheit nach innen (Hilfslinien: Diagonalen zwischen den Markierungen, dann radieren)",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[4,12],[8,12],[12,12],[0,8],[12,8],[0,4],[12,4],[0,0],[4,0],[8,0],[12,0]],
+  "targetLines": [[[4,12],[6,10]], [[6,10],[8,12]], [[8,12],[12,8]], [[12,8],[10,6]], [[10,6],[12,4]], [[12,4],[8,0]], [[8,0],[6,2]], [[6,2],[4,0]], [[4,0],[0,4]], [[0,4],[2,6]], [[2,6],[0,8]], [[0,8],[4,12]]],
+  "helpLines": [[[4,12],[12,4]], [[8,12],[0,4]], [[12,8],[4,0]], [[0,8],[8,0]]]
+}

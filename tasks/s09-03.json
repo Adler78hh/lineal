@@ -1,0 +1,10 @@
+{
+  "id": "s09-03",
+  "title": "Große Raute mit Kreuzgitter",
+  "note": "Raute ueber die Mittelmarkierungen; Senk-/Waagerechte durchzeichnen, ausserhalb der Raute radieren; Schraegen verbinden die entstandenen Schnittpunkte",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[4,12],[6,12],[8,12],[12,12],[0,8],[12,8],[0,6],[12,6],[0,4],[12,4],[0,0],[4,0],[6,0],[8,0],[12,0]],
+  "targetLines": [[[6,12],[12,6]], [[12,6],[6,0]], [[6,0],[0,6]], [[0,6],[6,12]], [[4,10],[4,2]], [[8,10],[8,2]], [[2,8],[10,8]], [[2,4],[10,4]], [[4,10],[10,4]], [[2,8],[8,2]], [[8,10],[2,4]], [[10,8],[4,2]]],
+  "helpLines": [[[4,12],[4,0]], [[8,12],[8,0]], [[0,8],[12,8]], [[0,4],[12,4]]]
+}

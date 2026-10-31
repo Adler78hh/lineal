@@ -625,3 +625,53 @@ body {
   right: 4px;
   font-size: 1rem;
 }
+
+/* Lines that are already there (e.g. a segment with marks), drawn like the frame. */
+.given-lines line {
+  stroke: var(--frame);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.target .given-lines line {
+  stroke-width: 2;
+}
+
+/* Grid points shown as marks across the frame. */
+.grid-ticks {
+  stroke: var(--frame);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.target .grid-ticks {
+  stroke-width: 1.5;
+}
+
+/* Areas to fill: black in the template, pencil grey on the board. */
+.areas polygon {
+  fill: var(--ink);
+}
+
+.fills polygon {
+  fill: var(--pencil);
+}
+
+.missing-fills polygon {
+  fill: rgb(43 52 66 / 0.18);
+  stroke: #7f9cb3;
+  stroke-width: 2;
+  stroke-dasharray: 3 7;
+}
+
+.extra-fills polygon {
+  fill: rgb(222 60 82 / 0.45);
+}
+
+.fills polygon,
+.missing-fills polygon,
+.extra-fills polygon,
+.areas polygon {
+  pointer-events: none;
+}

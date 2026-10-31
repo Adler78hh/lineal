@@ -1,0 +1,10 @@
+{
+  "id": "s08-02",
+  "title": "Ecken-Diagonalen",
+  "note": "Diagonalen ganz durchzeichnen, Mittelteil radieren",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[12,12],[0,8],[12,8],[0,4],[12,4],[0,0],[12,0]],
+  "targetLines": [[[0,8],[12,8]], [[0,4],[12,4]], [[0,12],[4,8]], [[12,12],[8,8]], [[0,0],[4,4]], [[12,0],[8,4]]],
+  "helpLines": [[[0,12],[12,0]], [[12,12],[0,0]]]
+}

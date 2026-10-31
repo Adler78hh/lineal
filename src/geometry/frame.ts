@@ -3,12 +3,15 @@ import { collinear, onSegment } from './segments';
 import type { Frame } from './task';
 import { EPS, type Segment, type Vec, cross, dist, dot, sub, tidy, uniquePoints } from './vec';
 
-export function frameSides(f: Frame & { kind: 'polygon' }): Segment[] {
+/** The straight sides of the frame (none for a circle or an open frame). */
+export function frameSides(f: Frame): Segment[] {
+  if (f.kind !== 'polygon') return [];
   return f.vertices.map((a, i) => ({ a, b: f.vertices[(i + 1) % f.vertices.length] }));
 }
 
 /** Is `p` inside the frame or on its border? */
 export function insideFrame(f: Frame, p: Vec, tol = EPS): boolean {
+  if (f.kind === 'open') return true;
   if (f.kind === 'circle') return dist(p, f.center) <= f.r + tol;
   if (frameSides(f).some((s) => onSegment(s, p, tol))) return true;
   // Ray casting, for any simple polygon.
@@ -22,6 +25,7 @@ export function insideFrame(f: Frame, p: Vec, tol = EPS): boolean {
 
 /** Where `s` crosses or touches the frame border. */
 export function frameCrossings(s: Segment, f: Frame): Vec[] {
+  if (f.kind === 'open') return [];
   if (f.kind === 'circle') {
     // |a + u·d − c|² = r²
     const d = sub(s.b, s.a);

@@ -1,7 +1,10 @@
-import { type CheckResult, checkDrawing } from '../geometry/check';
-import type { Segment } from '../geometry/vec';
+import { type CheckResult, type FillResult, checkDrawing, checkFills } from '../geometry/check';
+import type { Segment, Vec } from '../geometry/vec';
 import {
   canUndo,
+  currentFaces,
+  currentFillSeeds,
+  currentFilled,
   currentLines,
   currentMadePoints,
   currentPoints,
@@ -15,6 +18,7 @@ import {
   openTask,
   setState,
   subscribe,
+  toggleFill,
   undo,
 } from '../state/store';
 import { placeOf } from '../state/blocks';
@@ -36,6 +40,7 @@ const TOOLS: ToolButton[] = [
   { key: 'grid', label: 'Punkte', icon: icons.grid },
   { key: 'ruler', label: 'Lineal', icon: icons.ruler },
   { key: 'eraser', label: 'Radierer', icon: icons.eraser },
+  { key: 'fill', label: 'Ausmalen', icon: icons.fill },
   { key: 'undo', label: 'Zurück', icon: icons.undo },
   { key: 'check', label: 'Prüfen', icon: icons.check },
 ];
@@ -80,11 +85,12 @@ export function mountApp(root: HTMLElement): void {
   const rulerBtn = root.querySelector<HTMLButtonElement>('[data-tool="ruler"]')!;
   const eraserBtn = root.querySelector<HTMLButtonElement>('[data-tool="eraser"]')!;
   const undoBtn = root.querySelector<HTMLButtonElement>('[data-tool="undo"]')!;
+  const fillBtn = root.querySelector<HTMLButtonElement>('[data-tool="fill"]')!;
   const checkBtn = root.querySelector<HTMLButtonElement>('[data-tool="check"]')!;
   const feedbackBox = root.querySelector<HTMLElement>('.feedback')!;
 
   /** The last check, valid as long as the drawing it was made for is unchanged. */
-  let feedback: { result: CheckResult; lines: Segment[]; taskId: string } | null = null;
+  let feedback: { result: CheckResult; fills: FillResult | null; lines: Segment[]; seeds: Vec[]; taskId: string } | null = null;
   const board = new Board(
     boardSvg,
     boardSvg.querySelector<SVGGElement>('.ruler')!,
@@ -92,6 +98,7 @@ export function mountApp(root: HTMLElement): void {
     drawLine,
     makePoint,
     erase,
+    toggleFill,
   );
   const [prevBtn, nextBtn] = root.querySelectorAll<HTMLButtonElement>('[data-nav]');
 
@@ -103,18 +110,22 @@ export function mountApp(root: HTMLElement): void {
   );
   root.querySelector('[data-home]')!.addEventListener('click', openHome);
   gridBtn.addEventListener('click', () => setState({ showGrid: !getState().showGrid }));
-  // With the eraser on, "Lineal" switches back to the ruler; otherwise it shows or hides it.
+  // With another tool on, "Lineal" switches back to the ruler; otherwise it shows or hides it.
   rulerBtn.addEventListener('click', () => {
     const s = getState();
-    setState(s.tool === 'eraser' ? { tool: 'ruler', showRuler: true } : { showRuler: !s.showRuler });
+    setState(s.tool !== 'ruler' ? { tool: 'ruler', showRuler: true } : { showRuler: !s.showRuler });
   });
   eraserBtn.addEventListener('click', () => setState({ tool: getState().tool === 'eraser' ? 'ruler' : 'eraser' }));
+  fillBtn.addEventListener('click', () => setState({ tool: getState().tool === 'fill' ? 'ruler' : 'fill' }));
   undoBtn.addEventListener('click', undo);
   checkBtn.addEventListener('click', () => {
     const task = currentTask();
     const lines = currentLines();
-    feedback = { result: checkDrawing(lines, task.targetLines, task.frame), lines, taskId: task.id };
-    if (feedback.result.done) markSolved(task.id);
+    const seeds = currentFillSeeds();
+    const result = checkDrawing(lines, task.targetLines, task.frame, task.givenLines);
+    const fills = task.areas.length || seeds.length ? checkFills(currentFaces(), seeds, task.areas) : null;
+    feedback = { result, fills, lines, seeds, taskId: task.id };
+    if (result.done && (!fills || (!fills.missing.length && !fills.extra.length))) markSolved(task.id);
     render();
   });
   feedbackBox.addEventListener('click', (e) => {
@@ -154,6 +165,12 @@ export function mountApp(root: HTMLElement): void {
     gridBtn.setAttribute('aria-pressed', String(s.showGrid));
     rulerBtn.setAttribute('aria-pressed', String(s.showRuler && s.tool === 'ruler'));
     eraserBtn.setAttribute('aria-pressed', String(s.tool === 'eraser'));
+    fillBtn.setAttribute('aria-pressed', String(s.tool === 'fill'));
+    fillBtn.hidden = task.areas.length === 0;
+    if (fillBtn.hidden && s.tool === 'fill') {
+      setState({ tool: 'ruler' });
+      return;
+    }
     undoBtn.disabled = !canUndo();
     boardSvg.classList.toggle('erasing', s.tool === 'eraser');
     // The template always shows its points; the toggle is about the board.
@@ -161,14 +178,18 @@ export function mountApp(root: HTMLElement): void {
     const lines = currentLines();
     const made = currentMadePoints();
     // Any change to the drawing (or another task) makes the last check out of date.
-    if (feedback && (feedback.lines !== lines || feedback.taskId !== task.id)) feedback = null;
-    showFeedback(feedbackBox, feedback?.result ?? null, s.taskIndex < tasks.length - 1, lines.length > 0);
+    const seeds = currentFillSeeds();
+    if (feedback && (feedback.lines !== lines || feedback.seeds !== seeds || feedback.taskId !== task.id)) feedback = null;
+    showFeedback(feedbackBox, feedback, s.taskIndex < tasks.length - 1, lines.length > 0);
     const vp = renderFigure(boardSvg, boardSvg.querySelector('.base')!, task, {
       variant: 'board',
       showGrid: s.showGrid,
       drawn: lines,
       made,
+      filled: task.areas.length || seeds.length ? currentFilled() : [],
       feedback: feedback?.result,
+      // Fills are judged once the lines are right.
+      fillFeedback: feedback?.result.done ? feedback.fills : null,
     });
     board.update(task, vp, s.showRuler, lines, made.length ? currentPoints() : task.gridPoints, s.tool);
   }
@@ -179,11 +200,20 @@ export function mountApp(root: HTMLElement): void {
 }
 
 /** Child-friendly words for a check result. `drewSomething`: the board is not empty. */
-function showFeedback(box: HTMLElement, r: CheckResult | null, hasNext: boolean, drewSomething: boolean): void {
-  box.hidden = !r;
-  if (!r) return;
-  box.className = `feedback ${r.done ? 'good' : 'almost'}`;
-  if (r.done) {
+function showFeedback(
+  box: HTMLElement,
+  f: { result: CheckResult; fills: FillResult | null } | null,
+  hasNext: boolean,
+  drewSomething: boolean,
+): void {
+  box.hidden = !f;
+  if (!f) return;
+  const r = f.result;
+  const fm = f.fills?.missing.length ?? 0;
+  const fx = f.fills?.extra.length ?? 0;
+  const done = r.done && !fm && !fx;
+  box.className = `feedback ${done ? 'good' : 'almost'}`;
+  if (done) {
     box.innerHTML = `<span class="big">⭐</span><span>Super! Alles richtig.</span>${
       hasNext
         ? `<button class="btn next" data-next>Nächste Aufgabe ${icons.next}</button>`
@@ -199,7 +229,10 @@ function showFeedback(box: HTMLElement, r: CheckResult | null, hasNext: boolean,
     const parts: string[] = [];
     if (m) parts.push(m === 1 ? 'Es fehlt noch eine Linie (gestrichelt).' : `Es fehlen noch ${m} Linien (gestrichelt).`);
     if (x) parts.push(`${x === 1 ? 'Eine Linie ist' : `${x} Linien sind`} zu viel (rot) – radiere sie weg.`);
-    text = `${x ? 'Schau noch mal: ' : 'Fast geschafft! '}${parts.join(' ')}`;
+    // Fills only make sense once the lines are right.
+    if (!m && !x && fm) parts.push(fm === 1 ? 'Male noch eine Fläche aus (grau).' : `Male noch ${fm} Flächen aus (grau).`);
+    if (!m && !x && fx) parts.push(`${fx === 1 ? 'Eine Fläche ist' : `${fx} Flächen sind`} zu viel ausgemalt (rot).`);
+    text = `${x || fx ? 'Schau noch mal: ' : 'Fast geschafft! '}${parts.join(' ')}`;
   }
   box.innerHTML = `<span class="big">🔍</span><span>${text}</span>`;
 }

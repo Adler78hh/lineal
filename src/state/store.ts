@@ -1,10 +1,11 @@
 import { eraseAt } from '../geometry/erase';
+import { boundaryLines, faceAt, faces } from '../geometry/faces';
 import { addLine } from '../geometry/segments';
 import { type Segment, type Vec, samePoint } from '../geometry/vec';
 import { tasks } from './tasks';
 
 /** What a finger on the board does: work with the ruler (move it, draw along it) or erase. */
-export type Tool = 'ruler' | 'eraser';
+export type Tool = 'ruler' | 'eraser' | 'fill';
 
 export interface AppState {
   /** The start page with all tasks, or one task. */
@@ -18,6 +19,8 @@ export interface AppState {
   drawings: Record<string, Segment[]>;
   /** Crossings the child turned into grid points, per task id. */
   madePoints: Record<string, Vec[]>;
+  /** Filled areas per task id, each as the point the child tapped. */
+  fills: Record<string, Vec[]>;
   /** Tasks the check found right at least once (they get a star on the start page). */
   solved: Record<string, boolean>;
 }
@@ -35,6 +38,7 @@ function load(): AppState {
     showRuler: true,
     drawings: {},
     madePoints: {},
+    fills: {},
     solved: {},
   };
   try {
@@ -50,6 +54,7 @@ function load(): AppState {
       showRuler: saved.showRuler !== false,
       drawings: record(saved.drawings),
       madePoints: record(saved.madePoints),
+      fills: record(saved.fills),
       solved: record(saved.solved),
     };
   } catch {
@@ -89,11 +94,38 @@ export const currentMadePoints = (): Vec[] => state.madePoints[currentTask().id]
 /** All magnetic points of the current task: from the task file and made from crossings. */
 export const currentPoints = (): Vec[] => [...currentTask().gridPoints, ...currentMadePoints()];
 
+export const currentFillSeeds = (): Vec[] => state.fills[currentTask().id] ?? [];
+
+let facesCache: { lines: Segment[]; taskId: string; faces: Vec[][] } | null = null;
+
+/** The closed areas of the current drawing (with frame and given lines). */
+export function currentFaces(): Vec[][] {
+  const task = currentTask();
+  const lines = currentLines();
+  if (facesCache?.lines !== lines || facesCache.taskId !== task.id) {
+    const bounding = boundaryLines(task.frame, task.givenLines, lines, currentPoints());
+    facesCache = { lines, taskId: task.id, faces: faces(bounding) };
+  }
+  return facesCache.faces;
+}
+
+/** The areas that are filled in now. */
+export function currentFilled(): Vec[][] {
+  const all = currentFaces();
+  const out: Vec[][] = [];
+  for (const p of currentFillSeeds()) {
+    const f = faceAt(all, p);
+    if (f && !out.includes(f)) out.push(f);
+  }
+  return out;
+}
+
 // ---- changes to the drawing, with undo ----
 
 interface Snapshot {
   lines: Segment[];
   made: Vec[];
+  fills: Vec[];
 }
 
 /** Earlier states of each task's drawing, newest last. Kept only while the app is open. */
@@ -102,13 +134,28 @@ const MAX_UNDO = 200;
 
 function remember(): void {
   const stack = (history[currentTask().id] ??= []);
-  stack.push({ lines: currentLines(), made: currentMadePoints() });
+  stack.push({ lines: currentLines(), made: currentMadePoints(), fills: currentFillSeeds() });
   if (stack.length > MAX_UNDO) stack.shift();
 }
 
-function change(lines: Segment[], made: Vec[] = currentMadePoints()): void {
+function change(lines: Segment[], made: Vec[] = currentMadePoints(), fills: Vec[] = currentFillSeeds()): void {
   const id = currentTask().id;
-  setState({ drawings: { ...state.drawings, [id]: lines }, madePoints: { ...state.madePoints, [id]: made } });
+  setState({
+    drawings: { ...state.drawings, [id]: lines },
+    madePoints: { ...state.madePoints, [id]: made },
+    fills: { ...state.fills, [id]: fills },
+  });
+}
+
+/** Fills the area under `p`, or empties it if it is filled already. */
+export function toggleFill(p: Vec): void {
+  const all = currentFaces();
+  const face = faceAt(all, p);
+  if (!face) return;
+  const seeds = currentFillSeeds();
+  const inFace = seeds.filter((q) => faceAt(all, q) === face);
+  remember();
+  change(currentLines(), currentMadePoints(), inFace.length ? seeds.filter((q) => !inFace.includes(q)) : [...seeds, p]);
 }
 
 /** Adds a drawn line to the current task, cut into pieces at grid points and crossings. */
@@ -141,7 +188,7 @@ export const canUndo = (): boolean => (history[currentTask().id]?.length ?? 0) >
 
 export function undo(): void {
   const last = history[currentTask().id]?.pop();
-  if (last) change(last.lines, last.made);
+  if (last) change(last.lines, last.made, last.fills);
 }
 
 export const openTask = (index: number): void => setState({ screen: 'task', taskIndex: index, tool: 'ruler' });

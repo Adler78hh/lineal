@@ -100,6 +100,7 @@ export class Board {
     private onLine: (line: Segment) => void,
     private onMakePoint: (p: Vec) => void,
     private onErase: (p: Vec, tol: number, newStep: boolean) => boolean,
+    private onFill: (p: Vec) => void,
   ) {
     svg.addEventListener('pointerdown', (e) => this.down(e));
     svg.addEventListener('pointermove', (e) => this.move(e));
@@ -169,7 +170,8 @@ export class Board {
     } else {
       this.tapping = null;
     }
-    if (!this.visible) {
+    // Filling only needs taps; the ruler rests meanwhile.
+    if (!this.visible || this.tool === 'fill') {
       capture();
       return;
     }
@@ -262,7 +264,8 @@ export class Board {
     } else if (tapped) {
       this.stroke = null;
       m.lift(e.pointerId);
-      this.tapCrossing(tap.at);
+      if (this.tool === 'fill') this.onFill(tap.at);
+      else this.tapCrossing(tap.at);
     } else if (this.stroke && this.stroke.id === e.pointerId) {
       const { points } = this.stroke;
       this.stroke = null;
@@ -330,7 +333,8 @@ export class Board {
   private finishStroke(points: Vec[]): void {
     if (!this.model || !this.task || !this.vp) return;
     const pose = this.model.view.pose;
-    const stops = edgeStops(pose, this.task.frame, this.points, this.lines);
+    // Given lines are stops too, like the frame.
+    const stops = edgeStops(pose, this.task.frame, this.points, [...this.lines, ...this.task.givenLines]);
     const line = strokeToLine(pose, points, stops, MIN_STROKE_PX / this.vp.scale);
     if (line) this.onLine(line);
   }
