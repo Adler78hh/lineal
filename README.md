@@ -53,8 +53,14 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
 
 ## Startseite und Blöcke
 
-Die Startseite zeigt die fünf Blöcke des Buchs mit ihren Seiten. Jede Aufgabe ist ein kleines Bild
+Die Startseite zeigt die fünf Blöcke des Buchs mit ihren Seiten. Blöcke und Seiten lassen sich
+auf- und zuklappen (das Gerät merkt sich, was offen ist). Jede Aufgabe ist ein kleines Bild
 ihrer Figur, gelöste Aufgaben haben einen Stern. Das Haus oben links führt zurück.
+
+Das Druckersymbol einer Seite lädt ein Arbeitsblatt als PDF herunter (`Lineal-Seite-06.pdf`):
+je Aufgabe links die Vorlage, rechts das leere Raster zum Zeichnen mit einem echten Lineal,
+drei Aufgaben pro A4-Blatt, oben Platz für den Namen. Das PDF entsteht im Gerät
+(`src/print/`), ohne Server und ohne Bibliothek.
 
 Die Blöcke stehen in `tasks/blocks.json` (Titel und Seitenbereich). Zu welcher Seite eine Aufgabe
 gehört, ergibt sich aus ihrer `id`: `s05-03` ist die 3. Aufgabe auf Seite 5.
@@ -142,4 +148,5 @@ npm run build    # statische Seite in dist/
   - `ruler.ts`: Lage des Lineals und Einrasten
   - `gesture.ts`: Bewegung aus Finger-Gesten
 - `src/state/`: Aufgabenliste, App-Zustand, `rulerModel.ts` (Drehpunkt-Logik ohne DOM, mit Tests)
+- `src/print/`: PDF-Arbeitsblätter (`pdf.ts`: kleiner PDF-Schreiber, `worksheet.ts`: Aufbau)
 - `src/ui/`: Oberfläche, Zeichnen als SVG; `board.ts` verteilt die Eingaben auf Lineal und Stift

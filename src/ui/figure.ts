@@ -1,8 +1,7 @@
 import type { CheckResult, FillResult } from '../geometry/check';
-import { frameSides } from '../geometry/frame';
-import { onSegment } from '../geometry/segments';
+import { markDirection } from '../geometry/marks';
 import type { Task } from '../geometry/task';
-import { type Segment, type Vec, dist, samePoint, sub, vec } from '../geometry/vec';
+import { type Segment, type Vec, vec } from '../geometry/vec';
 import { type Viewport, fitViewport } from '../geometry/viewport';
 import { fmt, svgEl } from './svg';
 
@@ -19,34 +18,6 @@ export interface FigureOptions {
   /** After "Prüfen": missing parts dashed, extra parts marked (board only). */
   feedback?: CheckResult | null;
   fillFeedback?: FillResult | null;
-}
-
-/**
- * Where a mark for grid point `p` goes: across the frame or a given line, as a short stroke
- * (`out`: pointing away from the frame; both ways: crossing a line). Null: show a dot.
- */
-function tickDirection(task: Task, p: Vec): { dir: Vec; both: boolean } | null {
-  const f = task.frame;
-  if (f.kind === 'circle' && Math.abs(dist(p, f.center) - f.r) < 1e-6) {
-    const d = sub(p, f.center);
-    return { dir: vec(d.x / f.r, d.y / f.r), both: !f.visible };
-  }
-  if (f.kind === 'polygon') {
-    if (f.vertices.some((v) => samePoint(v, p))) return { dir: vec(0, 0), both: false };
-    const side = frameSides(f).find((s) => onSegment(s, p));
-    if (side) {
-      const d = sub(side.b, side.a);
-      const l = Math.hypot(d.x, d.y);
-      return { dir: vec(d.y / l, -d.x / l), both: false };
-    }
-  }
-  const line = task.givenLines.find((s) => onSegment(s, p));
-  if (line) {
-    const d = sub(line.b, line.a);
-    const l = Math.hypot(d.x, d.y);
-    return { dir: vec(-d.y / l, d.x / l), both: true };
-  }
-  return null;
 }
 
 /**
@@ -119,7 +90,7 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
     let marks = '';
     for (const p of task.gridPoints) {
       const q = s(p);
-      const t = task.gridStyle === 'ticks' ? tickDirection(task, p) : null;
+      const t = task.gridStyle === 'ticks' ? markDirection(task, p) : null;
       if (!t) {
         svgEl('circle', { cx: fmt(q.x), cy: fmt(q.y), r }, grid);
         continue;

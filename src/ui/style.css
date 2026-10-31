@@ -528,16 +528,41 @@ body {
   margin-bottom: 16px;
 }
 
-.block h2 {
-  color: var(--ink);
-  text-align: left;
-  font-weight: 700;
+.block summary,
+.page summary {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 4px 10px;
-  margin: 0 0 6px;
+  list-style: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.block summary::-webkit-details-marker,
+.page summary::-webkit-details-marker {
+  display: none;
+}
+
+.block > summary {
+  flex-wrap: wrap;
   font-size: 1.25rem;
+  font-weight: 700;
+  min-height: 44px;
+}
+
+.chevron {
+  display: inline-flex;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+
+details[open] > summary > .chevron {
+  transform: rotate(90deg);
+}
+
+.chevron svg {
+  width: 22px;
+  height: 22px;
 }
 
 .block-no {
@@ -562,10 +587,36 @@ body {
   color: var(--muted);
 }
 
-.page h3 {
-  margin: 10px 0 8px;
-  font-size: 0.95rem;
+.page {
+  border-top: 1px solid #e6edf0;
+}
+
+.page:first-of-type {
+  margin-top: 8px;
+}
+
+.page > summary {
+  min-height: 52px;
+  padding: 4px 0;
+}
+
+.page-name {
+  font-weight: 700;
+}
+
+.page-count {
   color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.page .print {
+  margin-left: auto;
+  min-width: 48px;
+  min-height: 44px;
+}
+
+.page[open] > .task-grid {
+  padding-bottom: 14px;
 }
 
 .task-grid {

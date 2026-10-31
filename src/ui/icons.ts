@@ -9,6 +9,7 @@ export const icons = {
   fill: icon('<path d="M5 13l7-7 7 7-7 7z"/><path d="M5 13h14" /><path d="M8.5 16.5L12 20l3.5-3.5z" fill="currentColor"/><path d="M20 15.5c0 1.5-1 2.5-1 3.5a1 1 0 0 0 2 0c0-1-1-2-1-3.5z" fill="currentColor"/>'),
   undo: icon('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'),
   check: icon('<path d="M4 12.5l5 5L20 6.5"/>'),
+  print: icon('<path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z" fill="#fff"/><circle cx="17" cy="12" r="0.6" fill="currentColor"/>'),
   home: icon('<path d="M3.5 11L12 4l8.5 7"/><path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5"/>'),
   prev: icon('<path d="M15 5l-7 7 7 7"/>'),
   next: icon('<path d="M9 5l7 7-7 7"/>'),
