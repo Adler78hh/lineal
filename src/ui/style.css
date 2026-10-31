@@ -74,7 +74,8 @@ body {
 .task-label {
   display: flex;
   flex-direction: column;
-  min-width: 10em;
+  /* Fixed width, so the arrows stay put whatever the title. */
+  width: 15em;
   text-align: center;
 }
 
@@ -86,6 +87,9 @@ body {
 .task-title {
   color: var(--muted);
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tools {

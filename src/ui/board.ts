@@ -32,7 +32,8 @@ type Action = Grip | 'pen';
 
 function startPose(task: Task): RulerPose {
   const b = task.bounds;
-  return { origin: vec((b.minX + b.maxX) / 2, b.minY + (b.maxY - b.minY) * 0.42), angle: 0 };
+  // Turned half round, so it lies as one puts a ruler down: scale and drawing edge on top.
+  return { origin: vec((b.minX + b.maxX) / 2, b.minY + (b.maxY - b.minY) * 0.42), angle: Math.PI };
 }
 
 /** A finger that went down on an orange point: a tap, a long press (pin) or the start of a drag. */

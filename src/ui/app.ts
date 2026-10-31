@@ -126,6 +126,7 @@ export function mountApp(root: HTMLElement): void {
     const task = currentTask();
     taskNo.textContent = `Aufgabe ${s.taskIndex + 1} von ${tasks.length}`;
     taskTitle.textContent = task.title;
+    taskTitle.title = task.title;
     prevBtn.disabled = s.taskIndex === 0;
     nextBtn.disabled = s.taskIndex === tasks.length - 1;
     gridBtn.setAttribute('aria-pressed', String(s.showGrid));
