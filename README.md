@@ -95,6 +95,7 @@ Weitere Felder, alle optional:
 | `note` | Hinweis für die Lehrkraft, z. B. dass ein Endpunkt erst als Schnittpunkt entsteht (s05-10) |
 | `gridStyle` | `"dots"` (Standard) oder `"ticks"`: Rasterpunkte auf Rahmen oder vorgegebenen Strecken erscheinen als Markierungsstriche |
 | `givenLines` | Strecken, die schon da sind wie der Rahmen (z. B. eine Strecke mit 20 Teilen, s12-01) |
+| `givenCircles` | Kreise, die schon da sind (`cx`, `cy`, `r`); anders als ein Kreisrahmen begrenzen sie nichts |
 | `helpLines` | Hilfslinien, die das Buch zum Zeichnen und Wiederwegradieren vorschlägt; sie werden nicht angezeigt, aber getestet |
 | `areas` | Flächen zum Ausmalen (schwarz), als Vielecke. Dann erscheint das Werkzeug „Ausmalen“, und Prüfen vergleicht auch die Flächen. |
 
@@ -124,6 +125,12 @@ node scripts/import-figuren.mjs figuren_s6-15.json
 
 Es dreht die y-Achse um, skaliert die längere Seite auf 12, ersetzt gerundete Kreis- und
 Schnittpunkte durch exakte Werte und schreibt `tasks/sPP-NN.json` (z. B. `6-1` → `s06-01`).
+
+Auch das Träger-Format der Hüllkurven (Seiten 51–64, `"raster": { "art": "traeger" }`)
+versteht das Skript: Strecken mit Teilung werden vorgegebene Strecken mit Markierungen,
+Punktreihen und benannte Punkte werden Rasterpunkte, Kreise werden vorgegebene Kreise
+(`givenCircles`, kein Rahmen). Die Linienenden kommen aus den `verbindungen`, also genau
+auf die Teilungspunkte. Ein Hinweis `unsicher` wird an `note` angehängt.
 
 ## Veröffentlichen
 

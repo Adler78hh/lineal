@@ -28,6 +28,8 @@ export interface TaskJson {
   gridStyle?: 'dots' | 'ticks';
   /** Lines that are already there, like the frame (e.g. a segment with marks to draw to). */
   givenLines?: LineJson[];
+  /** Circles that are already there as part of the picture (not a frame: lines may go beyond them). */
+  givenCircles?: { cx: number; cy: number; r: number }[];
   targetLines: LineJson[];
   /** Lines the book suggests drawing on the way and erasing again. */
   helpLines?: LineJson[];
@@ -49,6 +51,7 @@ export interface Task {
   gridPoints: Vec[];
   gridStyle: 'dots' | 'ticks';
   givenLines: Segment[];
+  givenCircles: { center: Vec; r: number }[];
   targetLines: Segment[];
   helpLines: Segment[];
   areas: Vec[][];
@@ -132,6 +135,10 @@ export function parseTask(json: unknown): Task {
       gridPoints: uniquePoints([...framePoints, ...filePoints]),
       gridStyle: o.gridStyle === 'ticks' ? 'ticks' : 'dots',
       givenLines: lines(o.givenLines, 'givenLines'),
+      givenCircles: ((o.givenCircles ?? []) as Record<string, unknown>[]).map((c, i) => ({
+        center: vec(num(c.cx, `givenCircles[${i}].cx`), num(c.cy, `givenCircles[${i}].cy`)),
+        r: num(c.r, `givenCircles[${i}].r`),
+      })),
       targetLines: lines(o.targetLines, 'targetLines'),
       helpLines: lines(o.helpLines, 'helpLines'),
       areas,

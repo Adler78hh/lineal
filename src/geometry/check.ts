@@ -72,8 +72,10 @@ export function checkDrawing(
   frame: Frame,
   given: readonly Segment[] = [],
 ): CheckResult {
-  const allowed = [...targets, ...frameSides(frame), ...given];
-  const missing = joinStraight(targets.flatMap((t) => uncovered(t, drawn)));
+  const there = [...frameSides(frame), ...given];
+  const allowed = [...targets, ...there];
+  // A target line along the frame or a given line is there already.
+  const missing = joinStraight(targets.flatMap((t) => uncovered(t, [...drawn, ...there])));
   const extra = joinStraight(drawn.flatMap((d) => uncovered(d, allowed)));
   return { missing, extra, done: missing.length === 0 && extra.length === 0 };
 }

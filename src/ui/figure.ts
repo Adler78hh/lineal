@@ -72,6 +72,10 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
   } else if (task.frame.kind === 'polygon') {
     svgEl('polygon', { points: points(task.frame.vertices) }, frame);
   }
+  for (const c of task.givenCircles) {
+    const m = s(c.center);
+    svgEl('circle', { cx: fmt(m.x), cy: fmt(m.y), r: fmt(c.r * vp.scale) }, frame);
+  }
   segments('given-lines', task.givenLines);
 
   if (board) {

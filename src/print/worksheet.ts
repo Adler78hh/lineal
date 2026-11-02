@@ -37,6 +37,10 @@ function drawFrame(pdf: PdfDoc, task: Task, at: (p: Vec) => Pt, width: number): 
     const c = at(f.center);
     pdf.circle(c, at({ x: f.center.x + f.r, y: f.center.y }).x - c.x, 'stroke');
   }
+  for (const c of task.givenCircles) {
+    const m = at(c.center);
+    pdf.circle(m, at({ x: c.center.x + c.r, y: c.center.y }).x - m.x, 'stroke');
+  }
   for (const l of task.givenLines) pdf.line(at(l.a), at(l.b));
 }
 

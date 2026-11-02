@@ -49,7 +49,79 @@ const EXTRA_HELP = {
   ],
 };
 
+/**
+ * Envelope figures ("Hüllkurven"): no frame, but carriers – segments divided into parts, rows
+ * of points – plus circles and named points. Line ends are taken from the connections
+ * ("arm 1 point k ↔ arm 2 point 8−k"), so they hit the division points exactly.
+ */
+function convertCarriers(f) {
+  const w = f.rahmen.breite;
+  const h = f.rahmen.hoehe;
+  const k = SIZE / Math.max(w, h);
+  const P = ([x, y]) => [x * k, (h - y) * k];
+  const raster = f.raster;
+  const circles = (raster.kreise ?? []).map((c) => ({ c: P(c.m), r: c.r * k, drawn: c.zeichnen !== false }));
+  // Rounded marks move onto their circle.
+  const onCircle = (p) => {
+    for (const { c, r } of circles) {
+      const d = dist(p, c);
+      if (Math.abs(d - r) < SNAP) return [c[0] + ((p[0] - c[0]) * r) / d, c[1] + ((p[1] - c[1]) * r) / d];
+    }
+    return p;
+  };
+
+  const carriers = {};
+  const given = [];
+  const grid = [];
+  const addPoint = (p) => {
+    if (!grid.some((q) => same(p, q))) grid.push(p);
+  };
+  for (const [name, t] of Object.entries(raster.traeger ?? {})) {
+    if (t.art === 'strecke') {
+      const a = onCircle(P(t.von));
+      const b = onCircle(P(t.bis));
+      const pts = Array.from({ length: t.teile + 1 }, (_, i) => [a[0] + ((b[0] - a[0]) * i) / t.teile, a[1] + ((b[1] - a[1]) * i) / t.teile]);
+      carriers[name] = pts;
+      if (t.zeichnen !== false) given.push([a, b]);
+    } else {
+      carriers[name] = t.punkte.map(P).map(onCircle);
+    }
+    carriers[name].forEach(addPoint);
+  }
+  const named = Object.fromEntries(Object.entries(raster.punkte ?? {}).map(([n, p]) => [n, onCircle(P(p))]));
+  Object.values(named).forEach(addPoint);
+  for (const c of raster.kreise ?? []) for (const m of c.marken ?? []) addPoint(onCircle(P(m)));
+  for (const poly of raster.polygone ?? []) {
+    const pts = poly.map(P);
+    for (let i = 0; i + 1 < pts.length; i++) given.push([pts[i], pts[i + 1]]);
+    pts.forEach(addPoint);
+  }
+
+  const ref = (r) => (typeof r === 'string' ? named[r] : carriers[r[0]][r[1]]);
+  let targets = f.verbindungen.flatMap((v) => v.paare.map(([a, b]) => [ref(a), ref(b)]));
+  const sameLine = (s, t) => (same(s[0], t[0]) && same(s[1], t[1])) || (same(s[0], t[1]) && same(s[1], t[0]));
+  targets = targets.filter((t, i) => !same(t[0], t[1]) && !targets.slice(0, i).some((u) => sameLine(t, u)));
+
+  const R = (p) => [round(p[0]), round(p[1])];
+  const id = f.id.split('-');
+  const note = [f.hinweis, f.unsicher && `Unsicher: ${f.unsicher}`].filter(Boolean).join(' ');
+  return {
+    id: `s${pad(Number(id[0]))}-${pad(Number(id[1]))}`,
+    title: f.name,
+    ...(note ? { note } : {}),
+    frame: { type: 'open', w: round(w * k), h: round(h * k) },
+    gridStyle: 'ticks',
+    gridPoints: grid.map(R),
+    ...(given.length ? { givenLines: given.map((l) => l.map(R)) } : {}),
+    ...(circles.some((c) => c.drawn)
+      ? { givenCircles: circles.filter((c) => c.drawn).map(({ c, r }) => ({ cx: round(c[0]), cy: round(c[1]), r: round(r) })) }
+      : {}),
+    targetLines: targets.map((l) => l.map(R)),
+  };
+}
+
 function convert(f) {
+  if (f.raster?.art === 'traeger') return convertCarriers(f);
   const w = f.rahmen.breite;
   const h = f.rahmen.hoehe;
   const k = SIZE / Math.max(w, h);

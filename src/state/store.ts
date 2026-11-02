@@ -94,7 +94,10 @@ export const currentMadePoints = (): Vec[] => state.madePoints[currentTask().id]
 /** All magnetic points of the current task: from the task file and made from crossings. */
 export const currentPoints = (): Vec[] => [...currentTask().gridPoints, ...currentMadePoints()];
 
-export const currentFillSeeds = (): Vec[] => state.fills[currentTask().id] ?? [];
+const NO_SEEDS: Vec[] = [];
+
+/** Same object while nothing is filled, so a check result stays valid between renders. */
+export const currentFillSeeds = (): Vec[] => state.fills[currentTask().id] ?? NO_SEEDS;
 
 let facesCache: { lines: Segment[]; taskId: string; faces: Vec[][] } | null = null;
 

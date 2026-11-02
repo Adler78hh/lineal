@@ -40,7 +40,7 @@ describe('task files', () => {
     expect(tasks.slice(0, 10).map((t) => t.id)).toEqual(Array.from({ length: 10 }, (_, i) => `s05-${String(i + 1).padStart(2, '0')}`));
     const ids = tasks.map((t) => t.id);
     expect([...ids].sort((a, b) => a.localeCompare(b, 'de', { numeric: true }))).toEqual(ids);
-    expect(ids).toHaveLength(62);
+    expect(ids).toHaveLength(93);
   });
 
   it('has unique ids', () => {
@@ -49,6 +49,9 @@ describe('task files', () => {
 
   // A line can only be drawn exactly if the ruler can snap to both of its ends.
   it.each(tasks.map((t) => [t.id, t] as const))('%s: every target line can be drawn with the ruler', (_, t) => {
+    // Most tasks end every line on a grid point; only search further when needed (it is slow).
+    const ends = t.targetLines.flatMap((l) => [l.a, l.b]);
+    if (ends.every((e) => t.gridPoints.some((p) => samePoint(p, e)))) return;
     const reachable = reachablePoints(t);
     for (const l of t.targetLines) {
       for (const end of [l.a, l.b]) expect(reachable.some((p) => samePoint(p, end)), `${end.x},${end.y}`).toBe(true);

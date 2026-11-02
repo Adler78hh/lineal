@@ -22,6 +22,11 @@ export function markDirection(task: Task, p: Vec): { dir: Vec; both: boolean } |
       return { dir: vec(d.y / l, -d.x / l), both: false };
     }
   }
+  const circle = task.givenCircles.find((c) => Math.abs(dist(p, c.center) - c.r) < 1e-6);
+  if (circle) {
+    const d = sub(p, circle.center);
+    return { dir: vec(d.x / circle.r, d.y / circle.r), both: false };
+  }
   const line = task.givenLines.find((s) => onSegment(s, p));
   if (line) {
     const d = sub(line.b, line.a);

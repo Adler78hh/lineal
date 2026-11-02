@@ -35,9 +35,21 @@ export function splitAt(s: Segment, cuts: readonly Vec[]): Segment[] {
   return out;
 }
 
+/** A key for a point on a 1e-6 raster, so equal points can be found in a map. */
+export const pointKey = (p: Vec): string => `${Math.round(p.x * 1e6)},${Math.round(p.y * 1e6)}`;
+
+/** Drops repeated pieces (also reversed ones); keyed, so it stays fast with thousands of pieces. */
 function unique(pieces: Segment[]): Segment[] {
+  const seen = new Set<string>();
   const out: Segment[] = [];
-  for (const s of pieces) if (!out.some((t) => sameSegment(s, t))) out.push(s);
+  for (const s of pieces) {
+    const a = pointKey(s.a);
+    const b = pointKey(s.b);
+    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
   return out;
 }
 
