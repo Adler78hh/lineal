@@ -1,0 +1,10 @@
+{
+  "id": "s30-06",
+  "title": "Drachen mit Strahlen",
+  "note": "Drachen wie 30-5, dazu von den beiden anderen Ecken je zwei Linien in Richtung der fernen Seitenmitten bis zum Drachen",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[6,12],[12,12],[0,6],[12,6],[0,0],[6,0],[12,0]],
+  "targetLines": [[[0,0],[4,8]], [[4,8],[12,12]], [[0,0],[8,4]], [[8,4],[12,12]], [[0,12],[3,6]], [[0,12],[6,9]], [[6,3],[12,0]], [[9,6],[12,0]]],
+  "helpLines": [[[0,0],[6,12]], [[0,0],[12,6]], [[0,12],[6,0]], [[0,12],[12,6]], [[12,12],[6,0]], [[12,12],[0,6]], [[12,0],[0,6]], [[12,0],[6,12]]]
+}

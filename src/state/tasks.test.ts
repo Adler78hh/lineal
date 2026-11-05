@@ -35,12 +35,27 @@ function reachablePoints(t: Task): Vec[] {
   return points;
 }
 
+/** Is `p` where two lines through points of `pool` cross – both drawn, extended as far as needed? */
+function onTwoLines(p: Vec, pool: readonly Vec[]): boolean {
+  const dirs = new Map<string, number>();
+  for (const q of pool) {
+    const d = Math.hypot(q.x - p.x, q.y - p.y);
+    if (d < 1e-7) continue;
+    let dx = (q.x - p.x) / d;
+    let dy = (q.y - p.y) / d;
+    if (dx < -1e-9 || (Math.abs(dx) <= 1e-9 && dy < 0)) [dx, dy] = [-dx, -dy];
+    const k = `${Math.round(dx * 1e6)},${Math.round(dy * 1e6)}`;
+    dirs.set(k, (dirs.get(k) ?? 0) + 1);
+  }
+  return [...dirs.values()].filter((n) => n >= 2).length >= 2;
+}
+
 describe('task files', () => {
   it('loads the tasks in order, the ten of page 5 first', () => {
     expect(tasks.slice(0, 10).map((t) => t.id)).toEqual(Array.from({ length: 10 }, (_, i) => `s05-${String(i + 1).padStart(2, '0')}`));
     const ids = tasks.map((t) => t.id);
     expect([...ids].sort((a, b) => a.localeCompare(b, 'de', { numeric: true }))).toEqual(ids);
-    expect(ids).toHaveLength(93);
+    expect(ids).toHaveLength(256);
   });
 
   it('has unique ids', () => {
@@ -54,9 +69,12 @@ describe('task files', () => {
     if (ends.every((e) => t.gridPoints.some((p) => samePoint(p, e)))) return;
     const reachable = reachablePoints(t);
     for (const l of t.targetLines) {
-      for (const end of [l.a, l.b]) expect(reachable.some((p) => samePoint(p, end)), `${end.x},${end.y}`).toBe(true);
+      for (const end of [l.a, l.b]) {
+        const ok = reachable.some((p) => samePoint(p, end)) || onTwoLines(end, reachable);
+        expect(ok, `${end.x},${end.y}`).toBe(true);
+      }
     }
-  });
+  }, 60_000);
 
   it('s05-10 needs the centre as an intersection point', () => {
     const t = tasks.find((x) => x.id === 's05-10')!;

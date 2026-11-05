@@ -1,0 +1,9 @@
+{
+  "id": "s30-02",
+  "title": "Raute mit Eckstrahlen",
+  "note": "Raute aus den vier Seitenmitten; von jeder Ecke zwei Linien in Richtung der fernen Seitenmitten, jeweils nur bis zur Raute",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[6,12],[12,12],[0,6],[12,6],[0,0],[6,0],[12,0]],
+  "targetLines": [[[0,6],[6,12]], [[6,12],[12,6]], [[6,0],[12,6]], [[0,6],[6,0]], [[0,0],[2,4]], [[0,0],[4,2]], [[0,12],[2,8]], [[0,12],[4,10]], [[8,10],[12,12]], [[10,8],[12,12]], [[8,2],[12,0]], [[10,4],[12,0]]]
+}

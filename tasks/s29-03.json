@@ -1,0 +1,9 @@
+{
+  "id": "s29-03",
+  "title": "Großer Linienstern",
+  "note": "Jede Ecke mit zwei Drittelpunkten verbinden, dazu jeder Drittelpunkt mit dem Drittelpunkt der Nachbarseite gegenueber (12 Linien)",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[4,12],[8,12],[12,12],[0,8],[12,8],[0,4],[12,4],[0,0],[4,0],[8,0],[12,0]],
+  "targetLines": [[[0,12],[12,8]], [[12,12],[8,0]], [[12,0],[0,4]], [[0,0],[4,12]], [[12,12],[0,8]], [[12,0],[8,12]], [[0,0],[12,4]], [[0,12],[4,0]], [[4,12],[12,4]], [[12,8],[4,0]], [[8,0],[0,8]], [[0,4],[8,12]]]
+}

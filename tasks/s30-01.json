@@ -1,0 +1,9 @@
+{
+  "id": "s30-01",
+  "title": "Drachen mit Fenstern",
+  "note": "Drachen (wie 30-5), Linien von den beiden anderen Ecken bis zum Drachen, von jeder Seitenmitte zwei kurze Linien in Richtung der Nachbarmitten",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[6,12],[12,12],[0,6],[12,6],[0,0],[6,0],[12,0]],
+  "targetLines": [[[0,0],[4,8]], [[4,8],[12,12]], [[0,0],[8,4]], [[8,4],[12,12]], [[0,12],[3,6]], [[0,12],[6,9]], [[6,3],[12,0]], [[9,6],[12,0]], [[0,6],[2,4]], [[0,6],[2,8]], [[4,10],[6,12]], [[6,12],[8,10]], [[10,4],[12,6]], [[10,8],[12,6]], [[4,2],[6,0]], [[6,0],[8,2]]]
+}

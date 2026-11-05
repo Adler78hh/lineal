@@ -1,0 +1,9 @@
+{
+  "id": "s50-03",
+  "title": "Windrad",
+  "note": "Windrad: Mittellinien, Diagonalen und vier kurze Fluegelkanten",
+  "frame": { "type": "rect", "w": 12, "h": 12 },
+  "gridStyle": "ticks",
+  "gridPoints": [[0,12],[6,12],[12,12],[0,6],[12,6],[0,0],[6,0],[12,0]],
+  "targetLines": [[[6,12],[6,0]], [[0,6],[12,6]], [[0,12],[12,0]], [[0,0],[12,12]], [[0,6],[3,9]], [[6,12],[9,9]], [[9,3],[12,6]], [[3,3],[6,0]]]
+}

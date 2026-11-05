@@ -104,6 +104,7 @@ Rahmen-Typen:
 - `{ "type": "rect", "w": 12, "h": 12 }`: Rechteck, auch hochkant (z. B. 8 × 12)
 - `{ "type": "circle", "n": 8 }`: Kreis mit n gleich verteilten Rasterpunkten; mit `"visible": false` wird der Kreis nicht gezeichnet (nur seine Markierungen, s14-01)
 - `{ "type": "polygon", "n": 6 }`: regelmäßiges n-Eck, die Ecken sind Rasterpunkte
+- `{ "type": "polygon", "vertices": [[6,12],[0,6],…] }`: beliebiges Vieleck (z. B. Achteck mit Fasen, s69-03)
 - `{ "type": "open", "w": 12, "h": 12 }`: kein Rahmen
 
 Kreis und n-Eck haben optional `cx`, `cy` (Standard 6, 6), `r` (Standard 6) und
@@ -111,16 +112,18 @@ Kreis und n-Eck haben optional `cx`, `cy` (Standard 6, 6), `r` (Standard 6) und
 
 Ein Test prüft für jede Aufgabe, dass sich alle Ziellinien mit dem Lineal zeichnen lassen:
 von Rasterpunkten aus, über Schnittpunkte von Linien zwischen zwei Rasterpunkten und über
-Schnittpunkte von Ziel-, Hilfs- und vorgegebenen Linien. Für Aufgaben mit Flächen prüft ein
+Schnittpunkte von Ziel-, Hilfs- und vorgegebenen Linien, zuletzt als Schnittpunkt zweier
+verlängerter Linien durch solche Punkte. Für Aufgaben mit Flächen prüft ein
 weiterer Test, dass die Flächen genau zu den Feldern der Zeichnung passen.
 
 ### Aufgaben aus einer Figurensammlung übernehmen
 
-Die Seiten 6–15 stammen aus einer Figurensammlung im Format `figuren_*.json` (Ursprung oben
+Die Seiten 6–78 stammen aus einer Figurensammlung im Format `figuren_*.json` (Ursprung oben
 links, y nach unten, beliebige Größe). Das Skript rechnet sie um:
 
 ```sh
-node scripts/import-figuren.mjs figuren_s6-15.json
+node scripts/import-figuren.mjs figuren_alle.json --pages 6-78   # Seite 5 bleibt, wie sie ist
+node scripts/import-figuren.mjs figuren_alle.json --out /tmp/x   # zum Vergleichen
 ```
 
 Es dreht die y-Achse um, skaliert die längere Seite auf 12, ersetzt gerundete Kreis- und
@@ -131,6 +134,14 @@ versteht das Skript: Strecken mit Teilung werden vorgegebene Strecken mit Markie
 Punktreihen und benannte Punkte werden Rasterpunkte, Kreise werden vorgegebene Kreise
 (`givenCircles`, kein Rahmen). Die Linienenden kommen aus den `verbindungen`, also genau
 auf die Teilungspunkte. Ein Hinweis `unsicher` wird an `note` angehängt.
+
+Weitere Raster-Arten: `polygon` und `polygon_mit_markierungen` (das Vieleck ist der Rahmen),
+`kreis_mit_marken` (Kreisrahmen, die `ticks` sind die Marken), `punkte_frei` (Punkte auf einem
+nicht gezeichneten Kreis), `figur_vorgegeben` (die `linien` des Rasters sind vorgegeben).
+Linienenden, die im Foto gemessen und daher ungenau sind, rasten auf den nächsten Schnittpunkt
+von Linien zwischen Rasterpunkten ein (bis 0,03), notfalls über einen zweiten
+Konstruktionsschritt. Bleibt ein Ende trotzdem unerreichbar, bekommt der Rahmen Marken, wo die
+verlängerte Linie ihn trifft (das Skript meldet das).
 
 ## Veröffentlichen
 

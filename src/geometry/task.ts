@@ -8,12 +8,14 @@ type LineJson = [Pair, Pair];
  * - rect: the border of 0…w × 0…h.
  * - circle / polygon: default centre (6,6), radius 6, first point on top; `n` points come along.
  *   A circle with `visible: false` is not drawn (only its points, e.g. as marks).
+ * - polygon with `vertices`: any polygon, its corners come along.
  * - open: no border at all; w × h is just the area shown.
  */
 export type FrameJson =
   | { type: 'rect'; w: number; h: number }
   | { type: 'circle'; n?: number; cx?: number; cy?: number; r?: number; rotation?: number; visible?: boolean }
   | { type: 'polygon'; n: number; cx?: number; cy?: number; r?: number; rotation?: number }
+  | { type: 'polygon'; vertices: Pair[] }
   | { type: 'open'; w: number; h: number };
 
 /** A task file in /tasks. Coordinates 0–12, origin bottom left. */
@@ -99,8 +101,14 @@ function parseFrame(f: unknown): { frame: Frame; points: Vec[]; outline: Vec[] }
       const frame: Frame = o.type === 'rect' ? { kind: 'polygon', vertices: corners } : { kind: 'open' };
       return { frame, points: [], outline: corners };
     }
-    case 'circle':
-    case 'polygon': {
+    case 'polygon':
+      if (o.vertices !== undefined) {
+        if (!Array.isArray(o.vertices) || o.vertices.length < 3) throw new TaskError('frame.vertices: mindestens drei Punkte erwartet');
+        const pts = o.vertices.map((p, i) => point(p, `frame.vertices[${i}]`));
+        return { frame: { kind: 'polygon', vertices: pts }, points: pts, outline: pts };
+      }
+    // falls through
+    case 'circle': {
       const n = o.n === undefined && o.type === 'circle' ? 0 : num(o.n, 'frame.n');
       if (!Number.isInteger(n) || n < (o.type === 'polygon' ? 3 : 0)) throw new TaskError('frame.n: ungültig');
       const center = vec(o.cx === undefined ? 6 : num(o.cx, 'frame.cx'), o.cy === undefined ? 6 : num(o.cy, 'frame.cy'));

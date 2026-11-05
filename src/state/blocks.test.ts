@@ -25,12 +25,15 @@ describe('blocks', () => {
     }
   });
 
-  it('pages 5 to 15 belong to the first block, page 5 holds the ten first tasks', () => {
+  it('every page of the book has tasks, each in its block; page 5 holds the ten first tasks', () => {
     expect(blockOfPage(5)?.id).toBe('einstieg');
     const pages = pagesOf(blocks[0]);
-    expect(pages.map((p) => p.page)).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+    expect(pages.map((p) => p.page)).toEqual(Array.from({ length: 16 }, (_, i) => 5 + i));
     expect(pages[0].tasks.map((t) => t.task.id)).toEqual(tasks.slice(0, 10).map((t) => t.id));
-    expect(pagesOf(blocks[1])).toEqual([]);
+    for (const b of blocks) {
+      const { from, to } = b;
+      expect(pagesOf(b).map((p) => p.page)).toEqual(Array.from({ length: to - from + 1 }, (_, i) => from + i));
+    }
   });
 
   it('numbers tasks within their page', () => {
