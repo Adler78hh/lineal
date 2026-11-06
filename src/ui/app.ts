@@ -69,17 +69,15 @@ export function mountApp(root: HTMLElement): void {
       </header>
       <div class="palette" hidden aria-label="Farben">
         ${[STRONG, PALE]
-          .map(
-            (row) =>
-              `<div class="palette-row">${row
-                .map(([name, hex]) => `<button class="swatch" data-color="${hex}" style="background:${hex}" title="${name}" aria-label="${name}"></button>`)
-                .join('')}</div>`,
+          .flatMap((row, r) =>
+            row.map(
+              ([name, hex], c) =>
+                `<button class="swatch" data-color="${hex}" style="background:${hex};grid-row:${r + 1};grid-column:${c + 1}" title="${name}" aria-label="${name}"></button>`,
+            ),
           )
           .join('')}
-        <div class="palette-row own">
-          <label class="swatch wheel" title="Eigene Farbe" aria-label="Eigene Farbe"><input type="color" value="#327a86" /></label>
-          <span class="own-colors"></span>
-        </div>
+        <label class="swatch wheel" title="Eigene Farbe" aria-label="Eigene Farbe"><input type="color" value="#327a86" /></label>
+        <span class="own-colors"></span>
       </div>
       <main class="stage">
         <section class="card target" aria-label="Vorlage">
@@ -216,8 +214,13 @@ export function mountApp(root: HTMLElement): void {
     fillBtn.setAttribute('aria-pressed', String(s.tool === 'fill'));
     palette.hidden = s.tool !== 'fill';
     currentColor.style.background = s.color;
+    // Own colours sit next to the wheel: below it, then in the column beside it.
+    const cells = ['2 / 12', '1 / 13', '2 / 13'];
     ownColors.innerHTML = s.customColors
-      .map((c) => `<button class="swatch" data-color="${c}" style="background:${c}" title="Eigene Farbe" aria-label="Eigene Farbe"></button>`)
+      .map(
+        (c, i) =>
+          `<button class="swatch" data-color="${c}" style="background:${c};grid-area:${cells[i]}" title="Eigene Farbe" aria-label="Eigene Farbe"></button>`,
+      )
       .join('');
     palette.querySelectorAll<HTMLElement>('[data-color]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.color === s.color)));
     undoBtn.disabled = !canUndo();

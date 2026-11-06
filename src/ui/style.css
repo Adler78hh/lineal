@@ -833,14 +833,20 @@ details[open] > summary > .chevron {
   }
 }
 
-/* Colours of the fill tool: a strip under the bar while "Ausmalen" is on. */
+/* Colours of the fill tool: a strip under the bar while "Ausmalen" is on. Two rows of ten,
+   each pale colour under its strong one, the wheel and own colours beside; the swatches
+   shrink so each row fits on one line even on a phone. */
 .palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  padding: 8px 12px;
-  margin: 0 0 10px;
+  --sw: clamp(20px, calc((100vw - 90px) / 13), 30px);
+  display: grid;
+  grid-template-columns: repeat(10, var(--sw)) 2px var(--sw) var(--sw);
+  grid-auto-rows: var(--sw);
+  gap: 4px;
+  justify-content: start;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 10px;
+  margin: 0 0 8px;
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
@@ -850,30 +856,25 @@ details[open] > summary > .chevron {
   display: none;
 }
 
-.palette-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-}
-
 .swatch {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: var(--sw);
+  height: var(--sw);
   padding: 0;
   border: 1px solid rgb(0 0 0 / 0.18);
-  border-radius: 10px;
+  border-radius: 7px;
   cursor: pointer;
 }
 
 .swatch[aria-pressed='true'] {
-  outline: 3px solid var(--grid-point);
-  outline-offset: 2px;
+  outline: 2px solid var(--grid-point);
+  outline-offset: 1px;
 }
 
-/* The colour wheel: a rainbow ring around the system colour picker. */
+/* The colour wheel: a rainbow ring around the system colour picker, a little apart from the rows. */
 .swatch.wheel {
+  grid-row: 1;
+  grid-column: 12;
   display: inline-flex;
   overflow: hidden;
   background: conic-gradient(#c9548c, #de7a34, #d4a12a, #3e7a55, #327a86, #2f4b7c, #6e3f78, #c9548c);
@@ -891,6 +892,8 @@ details[open] > summary > .chevron {
 .own-colors {
   display: contents;
 }
+
+
 
 /* The chosen colour, as a dot on the fill button. */
 .tool .current-color {
