@@ -244,6 +244,14 @@ body {
   fill: var(--grid-point);
 }
 
+.point-labels text {
+  fill: var(--grid-point);
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
 /* Ruler: see-through light blue plastic, the drawing edge is the darker long side. */
 .ruler-body {
   fill: var(--ruler-fill);

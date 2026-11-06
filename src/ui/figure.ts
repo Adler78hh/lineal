@@ -1,5 +1,5 @@
 import type { CheckResult, FillResult } from '../geometry/check';
-import { markDirection } from '../geometry/marks';
+import { labelDirection, markDirection } from '../geometry/marks';
 import type { Task } from '../geometry/task';
 import { type Segment, type Vec, vec } from '../geometry/vec';
 import { type Viewport, fitViewport } from '../geometry/viewport';
@@ -106,6 +106,17 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
       marks += `M${fmt(q.x - d.x * back)},${fmt(q.y - d.y * back)}L${fmt(q.x + d.x * tick.out)},${fmt(q.y + d.y * tick.out)}`;
     }
     if (marks) svgEl('path', { class: 'grid-ticks', d: marks }, grid);
+    // Names and numbers of points (board only: on the small template they would be unreadable).
+    if (board && task.labels.length) {
+      const names = svgEl('g', { class: 'point-labels' }, into);
+      const size = task.labels.length > 30 ? 13 : 16;
+      for (const l of task.labels) {
+        const q = s(l.at);
+        const d = labelDirection(task, l.at);
+        const t = svgEl('text', { x: fmt(q.x + d.x * (size + 4)), y: fmt(q.y - d.y * (size + 4)), 'font-size': size }, names);
+        t.textContent = l.text;
+      }
+    }
     for (const p of opts.made ?? []) {
       const q = s(p);
       svgEl('circle', { class: 'made', cx: fmt(q.x), cy: fmt(q.y), r }, grid);

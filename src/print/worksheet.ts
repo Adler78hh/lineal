@@ -1,4 +1,4 @@
-import { markDirection } from '../geometry/marks';
+import { labelDirection, markDirection } from '../geometry/marks';
 import type { Task } from '../geometry/task';
 import type { Vec } from '../geometry/vec';
 import { A4, PdfDoc, type Pt } from './pdf';
@@ -70,6 +70,15 @@ function drawGrid(pdf: PdfDoc, task: Task, box: Box): void {
     const out = 2.6;
     const back = m.both ? out : 0.6;
     pdf.line({ x: q.x - m.dir.x * back, y: q.y - m.dir.y * back }, { x: q.x + m.dir.x * out, y: q.y + m.dir.y * out });
+  }
+  // Names and numbers of points, centred a little outside (Helvetica digits are about half a size wide).
+  const size = task.labels.length > 30 ? 6 : 7;
+  const PT = 0.3528; // mm per pt
+  for (const l of task.labels) {
+    const q = at(l.at);
+    const d = labelDirection(task, l.at);
+    const c = { x: q.x + d.x * 4.4, y: q.y + d.y * 4.4 };
+    pdf.text({ x: c.x - (l.text.length * size * 0.55 * PT) / 2, y: c.y - size * 0.35 * PT }, size, l.text);
   }
 }
 

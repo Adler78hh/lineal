@@ -37,6 +37,8 @@ export interface TaskJson {
   helpLines?: LineJson[];
   /** Areas to fill in (black), as polygons. */
   areas?: Pair[][];
+  /** Names or numbers printed next to points, e.g. "A" or "1"…"17". */
+  labels?: { at: Pair; text: string }[];
 }
 
 export type Frame =
@@ -57,6 +59,7 @@ export interface Task {
   targetLines: Segment[];
   helpLines: Segment[];
   areas: Vec[][];
+  labels: { at: Vec; text: string }[];
   bounds: Bounds;
 }
 
@@ -150,6 +153,10 @@ export function parseTask(json: unknown): Task {
       targetLines: lines(o.targetLines, 'targetLines'),
       helpLines: lines(o.helpLines, 'helpLines'),
       areas,
+      labels: ((o.labels ?? []) as Record<string, unknown>[]).map((l, i) => {
+        if (typeof l.text !== 'string') throw new TaskError(`labels[${i}].text: Text erwartet`);
+        return { at: point(l.at, `labels[${i}].at`), text: l.text };
+      }),
       bounds: boundsOf(outline),
     };
   } catch (e) {

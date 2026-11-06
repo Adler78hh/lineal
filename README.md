@@ -97,6 +97,7 @@ Weitere Felder, alle optional:
 | `givenLines` | Strecken, die schon da sind wie der Rahmen (z. B. eine Strecke mit 20 Teilen, s12-01) |
 | `givenCircles` | Kreise, die schon da sind (`cx`, `cy`, `r`); anders als ein Kreisrahmen begrenzen sie nichts |
 | `helpLines` | Hilfslinien, die das Buch zum Zeichnen und Wiederwegradieren vorschlägt; sie werden nicht angezeigt, aber getestet |
+| `labels` | Namen und Nummern an Punkten (`{ "at": [x, y], "text": "A" }`), auf der Zeichenfläche und im Arbeitsblatt; aus `beschriftungen`, `nummern` und benannten Punkten der Sammlung |
 | `areas` | Flächen zum Ausmalen (schwarz), als Vielecke. Dann erscheint das Werkzeug „Ausmalen“, und Prüfen vergleicht auch die Flächen. |
 
 Rahmen-Typen:

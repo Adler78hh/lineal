@@ -21,6 +21,12 @@ const round = (v) => {
 const pad = (n) => String(n).padStart(2, '0');
 const dist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
 const same = (p, q) => dist(p, q) < 1e-7;
+/** Names of points as the book prints them ("L3"/"R3" for row 3 left and right become "3"). */
+const labelText = (name) => String(name).replace(/^[LR](\d+)$/, '$1');
+function addLabel(labels, at, text) {
+  if (!labels.some((l) => same(l.at, at))) labels.push({ at, text: labelText(text) });
+}
+const formatLabels = (labels, R) => (labels.length ? { labels: labels.map((l) => ({ at: R(l.at), text: l.text })) } : {});
 const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
 
 function crossing([a, b], [c, d]) {
@@ -102,6 +108,10 @@ function convertCarriers(f) {
   }
 
   const ref = (r) => (typeof r === 'string' ? named[r] : carriers[r[0]][r[1]]);
+  const labels = [];
+  for (const [n, p] of Object.entries(named)) addLabel(labels, p, n);
+  for (const [name, t] of Object.entries(raster.traeger ?? {}))
+    for (const [text, i] of Object.entries(t.nummern ?? {})) if (carriers[name][i]) addLabel(labels, carriers[name][i], text);
   let targets = f.verbindungen.flatMap((v) => v.paare.map(([a, b]) => [ref(a), ref(b)]));
   const sameLine = (s, t) => (same(s[0], t[0]) && same(s[1], t[1])) || (same(s[0], t[1]) && same(s[1], t[0]));
   targets = targets.filter((t, i) => !same(t[0], t[1]) && !targets.slice(0, i).some((u) => sameLine(t, u)));
@@ -121,6 +131,7 @@ function convertCarriers(f) {
       ? { givenCircles: circles.filter((c) => c.drawn).map(({ c, r }) => ({ cx: round(c[0]), cy: round(c[1]), r: round(r) })) }
       : {}),
     targetLines: targets.map((l) => l.map(R)),
+    ...formatLabels(labels, R),
   };
 }
 
@@ -385,6 +396,9 @@ function convert(f) {
     if (left.length) console.log(`${f.id}: nicht erreichbar`, left.slice(0, 4).map(R));
   }
 
+  const labels = [];
+  (raster.beschriftungen ?? []).forEach((text, i) => raster.punkte?.[i] && addLabel(labels, fix(P(raster.punkte[i])), text));
+
   const areas = (f.flaechen ?? []).map((a) => cleanPolygon(a.punkte.map(P))).filter(Boolean);
   const id = f.id.split('-');
   const tickArts = ['rahmen_mit_markierungen', 'punktkreis', 'strecken', 'kreis_mit_marken', 'polygon', 'polygon_mit_markierungen'];
@@ -399,6 +413,7 @@ function convert(f) {
     targetLines: targets.map((l) => l.map(R)),
     ...(help.length ? { helpLines: help.map((l) => l.map(R)) } : {}),
     ...(areas.length ? { areas: areas.map((a) => a.map(R)) } : {}),
+    ...formatLabels(labels, R),
   };
   return task;
 }
@@ -411,6 +426,7 @@ function format(task) {
   for (const [key, v] of Object.entries(task)) {
     let s;
     if (key === 'gridPoints') s = pts(v);
+    else if (key === 'labels') s = `[${v.map((l) => `{ "at": [${l.at[0]},${l.at[1]}], "text": ${JSON.stringify(l.text)} }`).join(', ')}]`;
     else if (key === 'targetLines' || key === 'helpLines' || key === 'givenLines') s = lines(v);
     else if (key === 'areas') s = `[${v.map(pts).join(', ')}]`;
     else if (typeof v === 'object') s = JSON.stringify(v).replace(/,"/g, ', "').replace(/^\{"/, '{ "').replace(/\}$/, ' }').replace(/":/g, '": ');

@@ -51,3 +51,11 @@ describe('circlePoints', () => {
     expect(circlePoints(vec(0, 0), 1, 4, 0)).toEqual([vec(1, 0), vec(0, 1), vec(-1, 0), vec(0, -1)]);
   });
 });
+
+describe('point labels', () => {
+  it('reads names and numbers of points', () => {
+    const t = parseTask({ id: 'x', frame: { type: 'open', w: 12, h: 12 }, targetLines: [], labels: [{ at: [6, 0], text: 'A' }] });
+    expect(t.labels).toEqual([{ at: { x: 6, y: 0 }, text: 'A' }]);
+    expect(parseTask({ id: 'y', frame: { type: 'rect', w: 12, h: 12 }, targetLines: [] }).labels).toEqual([]);
+  });
+});
