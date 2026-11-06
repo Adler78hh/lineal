@@ -43,7 +43,8 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
 - Meilenstein 7: Prüfen
   - Vergleicht die gezeichneten Teilstrecken mit `targetLines` (Toleranz 0,001). Wie die Linien gezeichnet wurden, ist egal: in Teilen, rückwärts, doppelt.
   - Linien auf dem Rahmen zählen nicht als Fehler.
-  - Rückmeldung: Fehlende Stücke erscheinen dezent gestrichelt, überzählige bekommen ein rotes Band. Ein Kasten sagt es in Worten (unter der Vorlage bzw. im Hochformat unten auf der Zeichenfläche).
+  - Rückmeldung: Richtige Stücke bekommen ein grünes Band, überzählige ein rotes. Ein Kasten sagt in Worten, wie viele Linien der Vorlage ganz richtig sind und wie viele noch fehlen (unter der Vorlage bzw. im Hochformat unten auf der Zeichenfläche).
+  - Die Lupe mit „Tipp“ im Kasten zeigt, was fehlt: fehlende Stücke gestrichelt, fehlende Flächen grau und – pink – die Kreuzungen, die man als Punkte anlegen muss (`helpPoints`: Linienenden außerhalb des Rasters und Punkte auf dem Weg dorthin, z. B. S1, S2 in 34-1). Noch einmal tippen blendet den Tipp aus.
   - Bei „alles richtig“ gibt es einen Stern und den Knopf „Nächste Aufgabe“. Jede Änderung an der Zeichnung, Antippen des Kastens oder eine andere Aufgabe blendet die Rückmeldung aus.
 
 - Meilenstein 8: PWA und GitHub Pages
@@ -97,6 +98,7 @@ Weitere Felder, alle optional:
 | `givenLines` | Strecken, die schon da sind wie der Rahmen (z. B. eine Strecke mit 20 Teilen, s12-01) |
 | `givenCircles` | Kreise, die schon da sind (`cx`, `cy`, `r`); anders als ein Kreisrahmen begrenzen sie nichts |
 | `helpLines` | Hilfslinien, die das Buch zum Zeichnen und Wiederwegradieren vorschlägt; sie werden nicht angezeigt, aber getestet |
+| `helpPoints` | Kreuzungen auf dem Weg, die „Tipp“ pink zeigt; Linienenden außerhalb des Rasters kommen von selbst dazu. Der Import nimmt die `hilfspunkte` der Sammlung oder sucht einen Konstruktionsweg |
 | `labels` | Namen und Nummern an Punkten (`{ "at": [x, y], "text": "A" }`), auf der Zeichenfläche und im Arbeitsblatt; aus `beschriftungen`, `nummern` und benannten Punkten der Sammlung |
 | `areas` | Flächen zum Ausmalen (schwarz), als Vielecke. Dann erscheint das Werkzeug „Ausmalen“, und Prüfen vergleicht auch die Flächen. |
 

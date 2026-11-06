@@ -178,7 +178,7 @@ function reachable(grid, segs) {
       }
     if (!grew) break;
   }
-  return { has: (p) => pts.has(key(p)) || onTwoLines(p, [...pts.values()]), points: () => [...pts.values()] };
+  return { has: (p) => pts.has(key(p)) || onTwoLines(p, [...pts.values()]), first: (p) => pts.has(key(p)), points: () => [...pts.values()] };
 }
 
 /** Is `p` where two lines through reachable points cross (draw both, extended)? */
@@ -194,6 +194,35 @@ function onTwoLines(p, pool) {
     dirs.set(key, (dirs.get(key) ?? 0) + 1);
   }
   return [...dirs.values()].filter((n) => n >= 2).length >= 2;
+}
+
+/**
+ * Points on the way to `p` when it is not a plain crossing: the lines through `p` that the
+ * child can draw, each through two reachable points (grid points preferred). One line is
+ * enough on the border (it meets the frame there), else two. Returns the points of those
+ * lines that are not grid points.
+ */
+function waypoints(p, pool, isGrid, onBorder) {
+  const groups = new Map();
+  for (const q of pool) {
+    const d = dist(p, q);
+    if (d < 1e-7) continue;
+    let dx = (q[0] - p[0]) / d;
+    let dy = (q[1] - p[1]) / d;
+    if (dx < -1e-9 || (Math.abs(dx) <= 1e-9 && dy < 0)) [dx, dy] = [-dx, -dy];
+    const key = `${Math.round(dx * 1e6)},${Math.round(dy * 1e6)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(q);
+  }
+  const options = [...groups.values()]
+    .filter((g) => g.length >= 2)
+    .map((g) => {
+      // Two points to lay the ruler on: grid points first, then the ones closest to p.
+      const two = [...g].sort((a, b) => Number(isGrid(b)) - Number(isGrid(a)) || dist(a, p) - dist(b, p)).slice(0, 2);
+      return two.filter((q) => !isGrid(q));
+    })
+    .sort((a, b) => a.length - b.length);
+  return options.slice(0, onBorder ? 1 : 2).flat();
 }
 
 /** Where the infinite line through `a`, `b` leaves the frame (rectangle or polygon corners, or circle). */
@@ -364,6 +393,9 @@ function convert(f) {
   // 5. Ends that are still not exact: maybe a crossing of two lines through reachable points
   //    (a second construction step). If not even that, the frame gets marks where the
   //    extended line meets it – in these books every line is laid on marks of the frame.
+  // Points on the way that the collection names itself ("hilfspunkte": S1, S2, … in 34-1).
+  const named = (f.hilfspunkte ?? []).filter((h) => h && h.punkt).map((h) => fix(P(h.punkt)));
+  const helpPoints = [...named];
   const exactSegs = () => [...targets, ...help, ...given].filter(([a, b]) => isExact(a) && isExact(b));
   const allEnds = () => targets.flat();
   if (!allEnds().every((e) => grid.some((g) => same(g, e)))) {
@@ -394,6 +426,18 @@ function convert(f) {
     }
     const left = allEnds().filter((e) => !reach.has(e));
     if (left.length) console.log(`${f.id}: nicht erreichbar`, left.slice(0, 4).map(R));
+
+    // Points on the way, shown by "Tipp" in pink (the line ends off the grid come along anyway).
+    const isGrid = (q) => grid.some((g) => same(g, q));
+    const outlineSides = (outline ?? []).map((a, i) => [a, outline[(i + 1) % outline.length]]);
+    const onBorder = (e) =>
+      (frame.type === 'circle' && Math.abs(dist(e, circle.c) - circle.r) < 1e-6) ||
+      [...outlineSides, ...given].some(([a, b]) => distToLine(e, a, b) < 1e-6 && dist(e, a) + dist(e, b) <= dist(a, b) + 1e-6);
+    const pool2 = reach.points();
+    for (const e of named.length ? [] : allEnds()) {
+      if (isGrid(e) || reach.first(e)) continue;
+      for (const q of waypoints(e, pool2, isGrid, onBorder(e))) if (!helpPoints.some((h) => same(h, q))) helpPoints.push(q);
+    }
   }
 
   const labels = [];
@@ -414,6 +458,7 @@ function convert(f) {
     ...(help.length ? { helpLines: help.map((l) => l.map(R)) } : {}),
     ...(areas.length ? { areas: areas.map((a) => a.map(R)) } : {}),
     ...formatLabels(labels, R),
+    ...(helpPoints.length ? { helpPoints: helpPoints.map(R) } : {}),
   };
   return task;
 }
@@ -425,7 +470,7 @@ function format(task) {
   const out = [];
   for (const [key, v] of Object.entries(task)) {
     let s;
-    if (key === 'gridPoints') s = pts(v);
+    if (key === 'gridPoints' || key === 'helpPoints') s = pts(v);
     else if (key === 'labels') s = `[${v.map((l) => `{ "at": [${l.at[0]},${l.at[1]}], "text": ${JSON.stringify(l.text)} }`).join(', ')}]`;
     else if (key === 'targetLines' || key === 'helpLines' || key === 'givenLines') s = lines(v);
     else if (key === 'areas') s = `[${v.map(pts).join(', ')}]`;

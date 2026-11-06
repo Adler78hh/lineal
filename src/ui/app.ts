@@ -90,7 +90,7 @@ export function mountApp(root: HTMLElement): void {
   const feedbackBox = root.querySelector<HTMLElement>('.feedback')!;
 
   /** The last check, valid as long as the drawing it was made for is unchanged. */
-  let feedback: { result: CheckResult; fills: FillResult | null; lines: Segment[]; seeds: Vec[]; taskId: string } | null = null;
+  let feedback: { result: CheckResult; fills: FillResult | null; lines: Segment[]; seeds: Vec[]; taskId: string; tip: boolean } | null = null;
   const board = new Board(
     boardSvg,
     boardSvg.querySelector<SVGGElement>('.ruler')!,
@@ -124,7 +124,7 @@ export function mountApp(root: HTMLElement): void {
     const seeds = currentFillSeeds();
     const result = checkDrawing(lines, task.targetLines, task.frame, task.givenLines);
     const fills = task.areas.length || seeds.length ? checkFills(currentFaces(), seeds, task.areas) : null;
-    feedback = { result, fills, lines, seeds, taskId: task.id };
+    feedback = { result, fills, lines, seeds, taskId: task.id, tip: false };
     if (result.done && (!fills || (!fills.missing.length && !fills.extra.length))) markSolved(task.id);
     render();
   });
@@ -135,6 +135,12 @@ export function mountApp(root: HTMLElement): void {
     }
     if ((e.target as Element).closest('[data-to-home]')) {
       openHome();
+      return;
+    }
+    // "Tipp" shows (or hides again) what is missing; the box stays open.
+    if ((e.target as Element).closest('[data-tip]') && feedback) {
+      feedback.tip = !feedback.tip;
+      render();
       return;
     }
     feedback = null;
@@ -190,6 +196,7 @@ export function mountApp(root: HTMLElement): void {
       feedback: feedback?.result,
       // Fills are judged once the lines are right.
       fillFeedback: feedback?.result.done ? feedback.fills : null,
+      tip: feedback?.tip ?? false,
     });
     board.update(task, vp, s.showRuler, lines, made.length ? currentPoints() : task.gridPoints, s.tool);
   }
@@ -202,7 +209,7 @@ export function mountApp(root: HTMLElement): void {
 /** Child-friendly words for a check result. `drewSomething`: the board is not empty. */
 function showFeedback(
   box: HTMLElement,
-  f: { result: CheckResult; fills: FillResult | null } | null,
+  f: { result: CheckResult; fills: FillResult | null; tip: boolean } | null,
   hasNext: boolean,
   drewSomething: boolean,
 ): void {
@@ -221,18 +228,27 @@ function showFeedback(
     }`;
     return;
   }
-  const m = r.missing.length;
   const x = r.extra.length;
+  const left = r.total - r.right;
+  const linesWord = (n: number) => (n === 1 ? 'Linie' : 'Linien');
   let text: string;
-  if (!drewSomething) text = 'Los geht’s! Zeichne die gestrichelten Linien mit dem Lineal nach.';
+  if (!drewSomething) text = 'Los geht’s! Zeichne die Linien der Vorlage mit dem Lineal nach.';
   else {
     const parts: string[] = [];
-    if (m) parts.push(m === 1 ? 'Es fehlt noch eine Linie (gestrichelt).' : `Es fehlen noch ${m} Linien (gestrichelt).`);
-    if (x) parts.push(`${x === 1 ? 'Eine Linie ist' : `${x} Linien sind`} zu viel (rot) – radiere sie weg.`);
+    if (r.total) {
+      const rightText = `${r.right} ${linesWord(r.right)} ${r.right === 1 ? 'ist' : 'sind'} richtig${r.right ? ' (grün)' : ''}`;
+      parts.push(left ? `${rightText}, ${left} ${left === 1 ? 'fehlt' : 'fehlen'} noch.` : `${rightText}.`);
+    }
+    if (x) parts.push(`${x} ${linesWord(x)} ${x === 1 ? 'ist' : 'sind'} zu viel (rot) – radiere sie weg.`);
     // Fills only make sense once the lines are right.
-    if (!m && !x && fm) parts.push(fm === 1 ? 'Male noch eine Fläche aus (grau).' : `Male noch ${fm} Flächen aus (grau).`);
-    if (!m && !x && fx) parts.push(`${fx === 1 ? 'Eine Fläche ist' : `${fx} Flächen sind`} zu viel ausgemalt (rot).`);
-    text = `${x || fx ? 'Schau noch mal: ' : 'Fast geschafft! '}${parts.join(' ')}`;
+    if (r.done && fm) parts.push(fm === 1 ? 'Male noch eine Fläche aus.' : `Male noch ${fm} Flächen aus.`);
+    if (r.done && fx) parts.push(`${fx === 1 ? 'Eine Fläche ist' : `${fx} Flächen sind`} zu viel ausgemalt (rot).`);
+    text = parts.join(' ');
   }
-  box.innerHTML = `<span class="big">🔍</span><span>${text}</span>`;
+  // The magnifier with "Tipp" shows what is still missing: dashed lines, grey areas, pink crossings.
+  const needsTip = r.missing.length > 0 || (r.done && fm > 0);
+  const tip = needsTip
+    ? `<button class="btn tip" data-tip aria-pressed="${f.tip}"><span class="big" aria-hidden="true">🔍</span>${f.tip ? 'Tipp aus' : 'Tipp'}</button>`
+    : '';
+  box.innerHTML = `<span>${text}</span>${tip}`;
 }

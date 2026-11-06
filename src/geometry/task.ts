@@ -1,4 +1,4 @@
-import { type Bounds, type Segment, type Vec, boundsOf, tidy, uniquePoints, vec } from './vec';
+import { type Bounds, type Segment, type Vec, boundsOf, samePoint, tidy, uniquePoints, vec } from './vec';
 
 type Pair = [number, number];
 type LineJson = [Pair, Pair];
@@ -39,6 +39,8 @@ export interface TaskJson {
   areas?: Pair[][];
   /** Names or numbers printed next to points, e.g. "A" or "1"…"17". */
   labels?: { at: Pair; text: string }[];
+  /** Crossings needed on the way (shown by "Tipp"); line ends off the grid are added anyway. */
+  helpPoints?: Pair[];
 }
 
 export type Frame =
@@ -60,6 +62,8 @@ export interface Task {
   helpLines: Segment[];
   areas: Vec[][];
   labels: { at: Vec; text: string }[];
+  /** Crossings the child has to make into grid points: line ends off the grid, and points on the way there. */
+  helpPoints: Vec[];
   bounds: Bounds;
 }
 
@@ -137,26 +141,31 @@ export function parseTask(json: unknown): Task {
       if (!Array.isArray(a) || a.length < 3) throw new TaskError(`areas[${i}]: mindestens drei Punkte erwartet`);
       return a.map((p, j) => point(p, `areas[${i}][${j}]`));
     });
+    const gridPoints = uniquePoints([...framePoints, ...filePoints]);
+    const targetLines = lines(o.targetLines, 'targetLines');
+    const offGrid = targetLines.flatMap((l) => [l.a, l.b]).filter((p) => !gridPoints.some((q) => samePoint(p, q)));
+    const filed = ((o.helpPoints ?? []) as unknown[]).map((p, i) => point(p, `helpPoints[${i}]`));
     if (o.gridStyle !== undefined && o.gridStyle !== 'dots' && o.gridStyle !== 'ticks') throw new TaskError('gridStyle: dots oder ticks');
     return {
       id: o.id,
       title: typeof o.title === 'string' ? o.title : o.id,
       note: typeof o.note === 'string' ? o.note : undefined,
       frame,
-      gridPoints: uniquePoints([...framePoints, ...filePoints]),
+      gridPoints,
       gridStyle: o.gridStyle === 'ticks' ? 'ticks' : 'dots',
       givenLines: lines(o.givenLines, 'givenLines'),
       givenCircles: ((o.givenCircles ?? []) as Record<string, unknown>[]).map((c, i) => ({
         center: vec(num(c.cx, `givenCircles[${i}].cx`), num(c.cy, `givenCircles[${i}].cy`)),
         r: num(c.r, `givenCircles[${i}].r`),
       })),
-      targetLines: lines(o.targetLines, 'targetLines'),
+      targetLines,
       helpLines: lines(o.helpLines, 'helpLines'),
       areas,
       labels: ((o.labels ?? []) as Record<string, unknown>[]).map((l, i) => {
         if (typeof l.text !== 'string') throw new TaskError(`labels[${i}].text: Text erwartet`);
         return { at: point(l.at, `labels[${i}].at`), text: l.text };
       }),
+      helpPoints: uniquePoints([...filed, ...offGrid]).filter((p) => !gridPoints.some((q) => samePoint(p, q))),
       bounds: boundsOf(outline),
     };
   } catch (e) {

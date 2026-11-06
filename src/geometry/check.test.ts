@@ -25,7 +25,8 @@ describe('uncovered', () => {
 describe('checkDrawing', () => {
   it.each(tasks.map((t) => [t.id, t] as const))('%s: drawing the target lines is right', (_, t) => {
     const r = checkDrawing(draw(t.targetLines, t.gridPoints), t.targetLines, t.frame);
-    expect(r).toEqual({ missing: [], extra: [], done: true });
+    expect(r).toMatchObject({ missing: [], extra: [], done: true });
+    expect(r.right).toBe(r.total);
   });
 
   it('accepts a line drawn in two parts, backwards, or twice', () => {
@@ -43,6 +44,9 @@ describe('checkDrawing', () => {
     expect(r.done).toBe(false);
     expect(r.extra).toEqual([]);
     expect(r.missing).toHaveLength(2); // the right half of y=8 and the whole diagonal
+    // Counted in whole lines: y=4 is right; half of y=8 does not count yet.
+    expect(r).toMatchObject({ total: 3, right: 1 });
+    expect(r.correct).toHaveLength(2);
   });
 
   it('reports a wrong line once, although it is cut into pieces', () => {
@@ -51,6 +55,9 @@ describe('checkDrawing', () => {
     expect(r.missing).toEqual([]);
     expect(r.extra).toHaveLength(1);
     expect(sameSegment(r.extra[0], seg(0, 0, 12, 12))).toBe(true);
+    // The right lines are green, the wrong one is not among them.
+    expect(r).toMatchObject({ total: 3, right: 3 });
+    expect(r.correct.some((c) => sameSegment(c, seg(0, 0, 12, 12)))).toBe(false);
   });
 });
 

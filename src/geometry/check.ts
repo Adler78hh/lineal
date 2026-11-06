@@ -12,6 +12,12 @@ export interface CheckResult {
   missing: Segment[];
   /** Drawn parts that are not in the target figure (lines along the frame do not count). */
   extra: Segment[];
+  /** Drawn parts that are right. */
+  correct: Segment[];
+  /** Target lines to draw (not those along the frame or a given line, which are there already). */
+  total: number;
+  /** Of these, the ones drawn completely. */
+  right: number;
   done: boolean;
 }
 
@@ -75,9 +81,17 @@ export function checkDrawing(
   const there = [...frameSides(frame), ...given];
   const allowed = [...targets, ...there];
   // A target line along the frame or a given line is there already.
-  const missing = joinStraight(targets.flatMap((t) => uncovered(t, [...drawn, ...there])));
-  const extra = joinStraight(drawn.flatMap((d) => uncovered(d, allowed)));
-  return { missing, extra, done: missing.length === 0 && extra.length === 0 };
+  const cover = [...drawn, ...there];
+  const gaps = targets.map((t) => uncovered(t, cover));
+  const missing = joinStraight(gaps.flat());
+  const wrong = drawn.map((d) => uncovered(d, allowed));
+  const extra = joinStraight(wrong.flat());
+  // The green band needs no joining: drawn pieces minus their wrong parts.
+  const correct = drawn.flatMap((d, i) => (wrong[i].length ? uncovered(d, wrong[i]) : [d]));
+  // Counted in whole target lines; those along the frame or a given line are there already.
+  const toDraw = targets.map((_, i) => i).filter((i) => uncovered(targets[i], there).length > 0);
+  const right = toDraw.filter((i) => gaps[i].length === 0).length;
+  return { missing, extra, correct, total: toDraw.length, right, done: missing.length === 0 && extra.length === 0 };
 }
 
 export interface FillResult {

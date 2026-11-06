@@ -59,3 +59,16 @@ describe('point labels', () => {
     expect(parseTask({ id: 'y', frame: { type: 'rect', w: 12, h: 12 }, targetLines: [] }).labels).toEqual([]);
   });
 });
+
+describe('help points', () => {
+  it('are the line ends off the grid plus the ones in the file', () => {
+    const t = parseTask({
+      id: 'h',
+      frame: { type: 'rect', w: 12, h: 12 },
+      gridPoints: [[0, 0], [12, 12]],
+      targetLines: [[[0, 0], [6, 6]]],
+      helpPoints: [[3, 3], [0, 0]],
+    });
+    expect(t.helpPoints).toEqual([vec(3, 3), vec(6, 6)]);
+  });
+});

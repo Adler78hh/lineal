@@ -408,6 +408,32 @@ body {
   pointer-events: none;
 }
 
+.correct-lines line {
+  stroke: rgb(46 158 91 / 0.32);
+  stroke-width: 14;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* "Tipp": crossings still to be made, bright pink so they stand out. */
+.help-points circle {
+  fill: rgb(236 32 140 / 0.25);
+  stroke: #ec208c;
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+.feedback .tip {
+  flex-direction: row;
+  min-height: 44px;
+  gap: 6px;
+  color: #7a4a00;
+}
+
+.feedback .tip[aria-pressed='true'] {
+  background: #ffe2b8;
+}
+
 .extra-lines line {
   stroke: rgb(222 60 82 / 0.38);
   stroke-width: 14;

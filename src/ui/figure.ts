@@ -1,7 +1,7 @@
 import type { CheckResult, FillResult } from '../geometry/check';
 import { labelDirection, markDirection } from '../geometry/marks';
 import type { Task } from '../geometry/task';
-import { type Segment, type Vec, vec } from '../geometry/vec';
+import { type Segment, type Vec, samePoint, vec } from '../geometry/vec';
 import { type Viewport, fitViewport } from '../geometry/viewport';
 import { fmt, svgEl } from './svg';
 
@@ -18,6 +18,8 @@ export interface FigureOptions {
   /** After "Prüfen": missing parts dashed, extra parts marked (board only). */
   feedback?: CheckResult | null;
   fillFeedback?: FillResult | null;
+  /** "Tipp" is on: missing lines dashed, missing areas grey, needed crossings pink. */
+  tip?: boolean;
 }
 
 /**
@@ -56,7 +58,7 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
   if (board) {
     polygons('fills', opts.filled ?? []);
     if (opts.fillFeedback) {
-      polygons('missing-fills', opts.fillFeedback.missing);
+      if (opts.tip) polygons('missing-fills', opts.fillFeedback.missing);
       polygons('extra-fills', opts.fillFeedback.extra);
     }
   } else {
@@ -80,9 +82,13 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
 
   if (board) {
     // Extra parts get a soft red band under the pencil line, missing ones a dashed hint.
-    if (opts.feedback) segments('extra-lines', opts.feedback.extra);
+    // After "Prüfen": right parts get a soft green band, extra ones a red one, under the pencil line.
+    if (opts.feedback) {
+      segments('correct-lines', opts.feedback.correct);
+      segments('extra-lines', opts.feedback.extra);
+    }
     segments('drawn-lines', opts.drawn ?? []);
-    if (opts.feedback) segments('missing-lines', opts.feedback.missing);
+    if (opts.feedback && opts.tip) segments('missing-lines', opts.feedback.missing);
   } else {
     segments('target-lines', task.targetLines);
   }
@@ -120,6 +126,15 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
     for (const p of opts.made ?? []) {
       const q = s(p);
       svgEl('circle', { class: 'made', cx: fmt(q.x), cy: fmt(q.y), r }, grid);
+    }
+  }
+  // "Tipp": the crossings still to be made, in pink (shown even with the grid hidden).
+  if (board && opts.tip && opts.feedback) {
+    const help = svgEl('g', { class: 'help-points' }, into);
+    for (const p of task.helpPoints) {
+      if ((opts.made ?? []).some((m) => samePoint(m, p))) continue;
+      const q = s(p);
+      svgEl('circle', { cx: fmt(q.x), cy: fmt(q.y), r: 9 }, help);
     }
   }
   return vp;
