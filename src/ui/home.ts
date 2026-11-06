@@ -69,11 +69,20 @@ function pageHtml(block: Block, p: Page, state: AppState): string {
     </details>`;
 }
 
-/** Draws the small pictures inside `el` (only visible ones have a size). */
-function drawThumbs(el: Element): void {
+/**
+ * Draws the small pictures inside `el` (only visible ones have a size): the child's own
+ * picture – lines and colours – once there is one, else the figure to copy.
+ */
+function drawThumbs(el: Element, state: AppState): void {
   el.querySelectorAll<HTMLButtonElement>('.task-tile').forEach((tile) => {
     const svg = tile.querySelector('svg')!;
-    if (!svg.childElementCount) renderFigure(svg, svg, tasks[Number(tile.dataset.index)], { variant: 'target', showGrid: false });
+    if (svg.childElementCount) return;
+    const task = tasks[Number(tile.dataset.index)];
+    const drawn = state.drawings[task.id] ?? [];
+    const paint = state.paint[task.id] ?? [];
+    const own = drawn.length > 0 || paint.some((p) => p.color);
+    tile.classList.toggle('own', own);
+    renderFigure(svg, svg, task, { variant: 'target', showGrid: false, ...(own ? { picture: true, drawn, paint } : {}) });
   });
 }
 
@@ -110,7 +119,7 @@ export function renderHome(el: HTMLElement, state: AppState, onOpen: (index: num
   el.querySelectorAll<HTMLDetailsElement>('details').forEach((d) =>
     d.addEventListener('toggle', () => {
       setOpen(d.dataset.key!, d.open);
-      if (d.open) drawThumbs(d);
+      if (d.open) drawThumbs(d, state);
     }),
   );
   el.querySelectorAll<HTMLButtonElement>('[data-print]').forEach((btn) =>
@@ -126,5 +135,5 @@ export function renderHome(el: HTMLElement, state: AppState, onOpen: (index: num
   el.querySelectorAll<HTMLButtonElement>('.task-tile').forEach((tile) =>
     tile.addEventListener('click', () => onOpen(Number(tile.dataset.index))),
   );
-  drawThumbs(el);
+  drawThumbs(el, state);
 }

@@ -740,7 +740,7 @@ details[open] > summary > .chevron {
 }
 
 .fills polygon {
-  fill: var(--pencil);
+  stroke: none;
 }
 
 .missing-fills polygon {
@@ -831,4 +831,78 @@ details[open] > summary > .chevron {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
   }
+}
+
+/* Colours of the fill tool: a strip under the bar while "Ausmalen" is on. */
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 0 0 10px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+}
+
+.palette[hidden] {
+  display: none;
+}
+
+.palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.swatch {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.swatch[aria-pressed='true'] {
+  outline: 3px solid var(--grid-point);
+  outline-offset: 2px;
+}
+
+/* The colour wheel: a rainbow ring around the system colour picker. */
+.swatch.wheel {
+  display: inline-flex;
+  overflow: hidden;
+  background: conic-gradient(#c9548c, #de7a34, #d4a12a, #3e7a55, #327a86, #2f4b7c, #6e3f78, #c9548c);
+}
+
+.swatch.wheel input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.own-colors {
+  display: contents;
+}
+
+/* The chosen colour, as a dot on the fill button. */
+.tool .current-color {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgb(0 0 0 / 0.25);
+}
+
+.tool {
+  position: relative;
 }

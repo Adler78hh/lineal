@@ -103,17 +103,25 @@ export interface FillResult {
 
 /**
  * Compares filled areas with the target: every face of the drawing whose inside lies in a
- * target area must be filled, every other face must stay white. `seeds` are the points the
- * child tapped to fill.
+ * target area must be painted (in any colour), every other face must stay white.
  */
-export function checkFills(all: readonly Vec[][], seeds: readonly Vec[], areas: readonly Vec[][]): FillResult {
+export function checkFills(all: readonly Vec[][], filledAt: (p: Vec) => boolean, areas: readonly Vec[][]): FillResult {
   const result: FillResult = { missing: [], extra: [] };
   for (const face of all) {
     const inside = interiorPoint(face);
     const wanted = areas.some((a) => insidePolygon(a, inside));
-    const filled = seeds.some((p) => faceAt(all, p) === face);
+    // Any colour counts: what matters is that the area is painted.
+    const filled = filledAt(inside);
     if (wanted && !filled) result.missing.push(face);
     if (filled && !wanted) result.extra.push(face);
   }
   return result;
 }
+
+/** For tests and old data: "filled" means the face of one of the tapped points. */
+export const filledBySeeds =
+  (all: readonly Vec[][], seeds: readonly Vec[]) =>
+  (p: Vec): boolean => {
+    const face = faceAt(all, p);
+    return !!face && seeds.some((s) => faceAt(all, s) === face);
+  };

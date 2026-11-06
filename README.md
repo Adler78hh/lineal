@@ -47,6 +47,12 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Die Lupe mit „Tipp“ im Kasten zeigt, was fehlt: fehlende Stücke gestrichelt, fehlende Flächen grau und – pink – die Kreuzungen, die man als Punkte anlegen muss (`helpPoints`: Linienenden außerhalb des Rasters und Punkte auf dem Weg dorthin, z. B. S1, S2 in 34-1). Noch einmal tippen blendet den Tipp aus.
   - Bei „alles richtig“ gibt es einen Stern und den Knopf „Nächste Aufgabe“. Jede Änderung an der Zeichnung, Antippen des Kastens oder eine andere Aufgabe blendet die Rückmeldung aus.
 
+- Ausmalen
+  - „Ausmalen“ gibt es bei jeder Aufgabe. Darunter erscheint eine Farbleiste: zehn kräftige Farben (Petrol, Beere, Schwarz, Tannengrün, Pflaume, Nachtblau, Rost, Kürbis, Senf, Kakao), zehn blasse (Lind, Rosa, Flieder, Lachs, Vanille, Eisblau, Mint, Sand, Aprikose, Hellgrau) und das Farbrad; die letzten drei eigenen Farben werden gemerkt (`src/ui/colors.ts`).
+  - Antippen einer Fläche malt sie in der gewählten Farbe aus, mit derselben Farbe noch einmal wird sie wieder weiß.
+  - Gespeichert wird die Form der Fläche beim Ausmalen: Radiert man danach eine Linie weg, behält jede Farbfläche ihre Form, nichts verschmilzt.
+  - Auf der Startseite zeigt die Kachel das eigene Bild des Kindes (Linien und Farben), sobald es eines gibt.
+
 - Ansicht
   - „Dünn“ in der Leiste schaltet alle Linien von Vorlage und Zeichenfläche auf etwa halbe Stärke und zurück (Rasterpunkte bleiben gleich groß). Gut für Figuren mit vielen Linien.
   - Die Lupe oben rechts in der Vorlage macht sie so groß wie die Zeichenfläche (quer nebeneinander, hochkant übereinander) und wieder klein.
@@ -105,7 +111,7 @@ Weitere Felder, alle optional:
 | `helpLines` | Hilfslinien, die das Buch zum Zeichnen und Wiederwegradieren vorschlägt; sie werden nicht angezeigt, aber getestet |
 | `helpPoints` | Kreuzungen auf dem Weg, die „Tipp“ pink zeigt; Linienenden außerhalb des Rasters kommen von selbst dazu. Der Import nimmt die `hilfspunkte` der Sammlung oder sucht einen Konstruktionsweg |
 | `labels` | Namen und Nummern an Punkten (`{ "at": [x, y], "text": "A" }`), auf der Zeichenfläche und im Arbeitsblatt; aus `beschriftungen`, `nummern` und benannten Punkten der Sammlung |
-| `areas` | Flächen zum Ausmalen (schwarz), als Vielecke. Dann erscheint das Werkzeug „Ausmalen“, und Prüfen vergleicht auch die Flächen. |
+| `areas` | Flächen zum Ausmalen (in der Vorlage schwarz), als Vielecke. Prüfen vergleicht dann auch die Flächen: jede Farbe zählt als ausgemalt, bunte Felder außerhalb der Flächen gelten als zu viel. |
 
 Rahmen-Typen:
 

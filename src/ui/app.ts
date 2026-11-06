@@ -1,10 +1,12 @@
 import { type CheckResult, type FillResult, checkDrawing, checkFills } from '../geometry/check';
-import type { Segment, Vec } from '../geometry/vec';
+import type { Segment } from '../geometry/vec';
 import {
+  type Paint,
   canUndo,
+  chooseColor,
+  colorAt,
   currentFaces,
-  currentFillSeeds,
-  currentFilled,
+  currentPaint,
   currentLines,
   currentMadePoints,
   currentPoints,
@@ -17,11 +19,12 @@ import {
   openHome,
   openTask,
   setState,
+  paintAt,
   subscribe,
-  toggleFill,
   undo,
 } from '../state/store';
 import { placeOf } from '../state/blocks';
+import { PALE, STRONG } from './colors';
 import { tasks } from '../state/tasks';
 import { renderFigure } from './figure';
 import { icons } from './icons';
@@ -64,6 +67,20 @@ export function mountApp(root: HTMLElement): void {
           ).join('')}
         </div>
       </header>
+      <div class="palette" hidden aria-label="Farben">
+        ${[STRONG, PALE]
+          .map(
+            (row) =>
+              `<div class="palette-row">${row
+                .map(([name, hex]) => `<button class="swatch" data-color="${hex}" style="background:${hex}" title="${name}" aria-label="${name}"></button>`)
+                .join('')}</div>`,
+          )
+          .join('')}
+        <div class="palette-row own">
+          <label class="swatch wheel" title="Eigene Farbe" aria-label="Eigene Farbe"><input type="color" value="#327a86" /></label>
+          <span class="own-colors"></span>
+        </div>
+      </div>
       <main class="stage">
         <section class="card target" aria-label="Vorlage">
           <h2>Vorlage</h2>
@@ -93,9 +110,14 @@ export function mountApp(root: HTMLElement): void {
   const fillBtn = root.querySelector<HTMLButtonElement>('[data-tool="fill"]')!;
   const checkBtn = root.querySelector<HTMLButtonElement>('[data-tool="check"]')!;
   const feedbackBox = root.querySelector<HTMLElement>('.feedback')!;
+  const palette = root.querySelector<HTMLElement>('.palette')!;
+  const ownColors = palette.querySelector<HTMLElement>('.own-colors')!;
+  const wheel = palette.querySelector<HTMLInputElement>('input[type="color"]')!;
+  fillBtn.insertAdjacentHTML('beforeend', '<span class="current-color" aria-hidden="true"></span>');
+  const currentColor = fillBtn.querySelector<HTMLElement>('.current-color')!;
 
   /** The last check, valid as long as the drawing it was made for is unchanged. */
-  let feedback: { result: CheckResult; fills: FillResult | null; lines: Segment[]; seeds: Vec[]; taskId: string; tip: boolean } | null = null;
+  let feedback: { result: CheckResult; fills: FillResult | null; lines: Segment[]; paint: Paint[]; taskId: string; tip: boolean } | null = null;
   const board = new Board(
     boardSvg,
     boardSvg.querySelector<SVGGElement>('.ruler')!,
@@ -103,7 +125,7 @@ export function mountApp(root: HTMLElement): void {
     drawLine,
     makePoint,
     erase,
-    toggleFill,
+    paintAt,
   );
   const [prevBtn, nextBtn] = root.querySelectorAll<HTMLButtonElement>('[data-nav]');
 
@@ -125,13 +147,20 @@ export function mountApp(root: HTMLElement): void {
   eraserBtn.addEventListener('click', () => setState({ tool: getState().tool === 'eraser' ? 'ruler' : 'eraser' }));
   fillBtn.addEventListener('click', () => setState({ tool: getState().tool === 'fill' ? 'ruler' : 'fill' }));
   undoBtn.addEventListener('click', undo);
+  palette.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-color]');
+    if (b) chooseColor(b.dataset.color!);
+  });
+  // The colour wheel: the chosen colour is painted with and kept among the own colours.
+  wheel.addEventListener('change', () => chooseColor(wheel.value.toUpperCase(), true));
   checkBtn.addEventListener('click', () => {
     const task = currentTask();
     const lines = currentLines();
-    const seeds = currentFillSeeds();
+    const paint = currentPaint();
     const result = checkDrawing(lines, task.targetLines, task.frame, task.givenLines);
-    const fills = task.areas.length || seeds.length ? checkFills(currentFaces(), seeds, task.areas) : null;
-    feedback = { result, fills, lines, seeds, taskId: task.id, tip: false };
+    // Only tasks with areas check the painting; elsewhere colours are free design.
+    const fills = task.areas.length ? checkFills(currentFaces(), (p) => colorAt(paint, p) !== null, task.areas) : null;
+    feedback = { result, fills, lines, paint, taskId: task.id, tip: false };
     if (result.done && (!fills || (!fills.missing.length && !fills.extra.length))) markSolved(task.id);
     render();
   });
@@ -185,11 +214,12 @@ export function mountApp(root: HTMLElement): void {
     rulerBtn.setAttribute('aria-pressed', String(s.showRuler && s.tool === 'ruler'));
     eraserBtn.setAttribute('aria-pressed', String(s.tool === 'eraser'));
     fillBtn.setAttribute('aria-pressed', String(s.tool === 'fill'));
-    fillBtn.hidden = task.areas.length === 0;
-    if (fillBtn.hidden && s.tool === 'fill') {
-      setState({ tool: 'ruler' });
-      return;
-    }
+    palette.hidden = s.tool !== 'fill';
+    currentColor.style.background = s.color;
+    ownColors.innerHTML = s.customColors
+      .map((c) => `<button class="swatch" data-color="${c}" style="background:${c}" title="Eigene Farbe" aria-label="Eigene Farbe"></button>`)
+      .join('');
+    palette.querySelectorAll<HTMLElement>('[data-color]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.color === s.color)));
     undoBtn.disabled = !canUndo();
     boardSvg.classList.toggle('erasing', s.tool === 'eraser');
     // The template always shows its points; the toggle is about the board.
@@ -197,15 +227,15 @@ export function mountApp(root: HTMLElement): void {
     const lines = currentLines();
     const made = currentMadePoints();
     // Any change to the drawing (or another task) makes the last check out of date.
-    const seeds = currentFillSeeds();
-    if (feedback && (feedback.lines !== lines || feedback.seeds !== seeds || feedback.taskId !== task.id)) feedback = null;
+    const paint = currentPaint();
+    if (feedback && (feedback.lines !== lines || feedback.paint !== paint || feedback.taskId !== task.id)) feedback = null;
     showFeedback(feedbackBox, feedback, s.taskIndex < tasks.length - 1, lines.length > 0);
     const vp = renderFigure(boardSvg, boardSvg.querySelector('.base')!, task, {
       variant: 'board',
       showGrid: s.showGrid,
       drawn: lines,
       made,
-      filled: task.areas.length || seeds.length ? currentFilled() : [],
+      paint,
       feedback: feedback?.result,
       // Fills are judged once the lines are right.
       fillFeedback: feedback?.result.done ? feedback.fills : null,

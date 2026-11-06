@@ -13,8 +13,10 @@ export interface FigureOptions {
   drawn?: readonly Segment[];
   /** Crossings the child turned into grid points (board only). */
   made?: readonly Vec[];
-  /** Areas the child has filled in (board only). */
-  filled?: readonly Vec[][];
+  /** Areas the child has painted, oldest first (board, or the child's picture on the start page). */
+  paint?: readonly { poly: readonly Vec[]; color: string | null }[];
+  /** Start page: show the child's picture (drawn lines and paint) instead of the target figure. */
+  picture?: boolean;
   /** After "Prüfen": missing parts dashed, extra parts marked (board only). */
   feedback?: CheckResult | null;
   fillFeedback?: FillResult | null;
@@ -54,13 +56,19 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
     }
   };
 
-  // Filled areas lie under every line.
+  // Painted areas lie under every line; white paint covers an older colour.
+  const painted = () => {
+    const g = svgEl('g', { class: 'fills' }, into);
+    for (const p of opts.paint ?? []) svgEl('polygon', { points: points(p.poly), fill: p.color ?? '#fff' }, g);
+  };
   if (board) {
-    polygons('fills', opts.filled ?? []);
+    painted();
     if (opts.fillFeedback) {
       if (opts.tip) polygons('missing-fills', opts.fillFeedback.missing);
       polygons('extra-fills', opts.fillFeedback.extra);
     }
+  } else if (opts.picture) {
+    painted();
   } else {
     polygons('areas', task.areas);
   }
@@ -90,7 +98,7 @@ export function renderFigure(svg: SVGSVGElement, into: SVGElement, task: Task, o
     segments('drawn-lines', opts.drawn ?? []);
     if (opts.feedback && opts.tip) segments('missing-lines', opts.feedback.missing);
   } else {
-    segments('target-lines', task.targetLines);
+    segments('target-lines', opts.picture ? (opts.drawn ?? []) : task.targetLines);
   }
 
   if (opts.showGrid) {

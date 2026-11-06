@@ -1,11 +1,19 @@
 import { eraseAt } from '../geometry/erase';
-import { boundaryLines, faceAt, faces } from '../geometry/faces';
+import { boundaryLines, faceAt, faces, insidePolygon, interiorPoint, polygonArea } from '../geometry/faces';
 import { addLine } from '../geometry/segments';
 import { type Segment, type Vec, samePoint } from '../geometry/vec';
 import { tasks } from './tasks';
 
 /** What a finger on the board does: work with the ruler (move it, draw along it) or erase. */
 export type Tool = 'ruler' | 'eraser' | 'fill';
+
+/** A painted area. `color: null` paints it white again (over an older colour). */
+export interface Paint {
+  poly: Vec[];
+  color: string | null;
+}
+
+export const BLACK = '#22262B';
 
 export interface AppState {
   /** The start page with all tasks, or one task. */
@@ -23,8 +31,14 @@ export interface AppState {
   drawings: Record<string, Segment[]>;
   /** Crossings the child turned into grid points, per task id. */
   madePoints: Record<string, Vec[]>;
-  /** Filled areas per task id, each as the point the child tapped. */
+  /** Old format (until Nov 2026): filled areas as the points tapped, all black. Read once, then `paint`. */
   fills: Record<string, Vec[]>;
+  /** Painted areas per task id, oldest first: each the shape it had when painted, with its colour. */
+  paint: Record<string, Paint[]>;
+  /** The colour the fill tool paints with. */
+  color: string;
+  /** Colours the child mixed with the colour wheel, newest first (at most three). */
+  customColors: string[];
   /** Tasks the check found right at least once (they get a star on the start page). */
   solved: Record<string, boolean>;
 }
@@ -45,6 +59,9 @@ function load(): AppState {
     drawings: {},
     madePoints: {},
     fills: {},
+    paint: {},
+    color: BLACK,
+    customColors: [],
     solved: {},
   };
   try {
@@ -63,6 +80,9 @@ function load(): AppState {
       drawings: record(saved.drawings),
       madePoints: record(saved.madePoints),
       fills: record(saved.fills),
+      paint: record(saved.paint),
+      color: typeof saved.color === 'string' ? saved.color : BLACK,
+      customColors: Array.isArray(saved.customColors) ? saved.customColors.filter((c) => typeof c === 'string').slice(0, 3) : [],
       solved: record(saved.solved),
     };
   } catch {
@@ -102,10 +122,7 @@ export const currentMadePoints = (): Vec[] => state.madePoints[currentTask().id]
 /** All magnetic points of the current task: from the task file and made from crossings. */
 export const currentPoints = (): Vec[] => [...currentTask().gridPoints, ...currentMadePoints()];
 
-const NO_SEEDS: Vec[] = [];
-
-/** Same object while nothing is filled, so a check result stays valid between renders. */
-export const currentFillSeeds = (): Vec[] => state.fills[currentTask().id] ?? NO_SEEDS;
+const NO_PAINT: Paint[] = [];
 
 let facesCache: { lines: Segment[]; taskId: string; faces: Vec[][] } | null = null;
 
@@ -120,15 +137,32 @@ export function currentFaces(): Vec[][] {
   return facesCache.faces;
 }
 
-/** The areas that are filled in now. */
-export function currentFilled(): Vec[][] {
-  const all = currentFaces();
-  const out: Vec[][] = [];
-  for (const p of currentFillSeeds()) {
-    const f = faceAt(all, p);
-    if (f && !out.includes(f)) out.push(f);
+/** Old fills (points, black) turned into painted areas once, kept until the next change saves them. */
+const migrated: Record<string, Paint[]> = {};
+
+/** The painted areas of the current task. Same object while nothing changes. */
+export function currentPaint(): Paint[] {
+  const id = currentTask().id;
+  const own = state.paint[id];
+  if (own) return own;
+  const old = state.fills[id];
+  if (!old?.length) return NO_PAINT;
+  if (!migrated[id]) {
+    const all = currentFaces();
+    const polys: Vec[][] = [];
+    for (const p of old) {
+      const f = faceAt(all, p);
+      if (f && !polys.includes(f)) polys.push(f);
+    }
+    migrated[id] = polys.map((poly) => ({ poly, color: BLACK }));
   }
-  return out;
+  return migrated[id];
+}
+
+/** The colour at `p`: the newest painted area there (null if painted white or not painted). */
+export function colorAt(paint: readonly Paint[], p: Vec): string | null {
+  for (let i = paint.length - 1; i >= 0; i--) if (insidePolygon(paint[i].poly, p)) return paint[i].color;
+  return null;
 }
 
 // ---- changes to the drawing, with undo ----
@@ -136,7 +170,7 @@ export function currentFilled(): Vec[][] {
 interface Snapshot {
   lines: Segment[];
   made: Vec[];
-  fills: Vec[];
+  paint: Paint[];
 }
 
 /** Earlier states of each task's drawing, newest last. Kept only while the app is open. */
@@ -145,28 +179,43 @@ const MAX_UNDO = 200;
 
 function remember(): void {
   const stack = (history[currentTask().id] ??= []);
-  stack.push({ lines: currentLines(), made: currentMadePoints(), fills: currentFillSeeds() });
+  stack.push({ lines: currentLines(), made: currentMadePoints(), paint: currentPaint() });
   if (stack.length > MAX_UNDO) stack.shift();
 }
 
-function change(lines: Segment[], made: Vec[] = currentMadePoints(), fills: Vec[] = currentFillSeeds()): void {
+function change(lines: Segment[], made: Vec[] = currentMadePoints(), paint: Paint[] = currentPaint()): void {
   const id = currentTask().id;
+  const { [id]: _old, ...fills } = state.fills;
   setState({
     drawings: { ...state.drawings, [id]: lines },
     madePoints: { ...state.madePoints, [id]: made },
-    fills: { ...state.fills, [id]: fills },
+    paint: { ...state.paint, [id]: paint },
+    fills,
   });
 }
 
-/** Fills the area under `p`, or empties it if it is filled already. */
-export function toggleFill(p: Vec): void {
-  const all = currentFaces();
-  const face = faceAt(all, p);
+/**
+ * Paints the area under `p` with the chosen colour – or white again if it has that colour
+ * already. The area keeps its shape even if a line around it is erased later.
+ */
+export function paintAt(p: Vec): void {
+  const face = faceAt(currentFaces(), p);
   if (!face) return;
-  const seeds = currentFillSeeds();
-  const inFace = seeds.filter((q) => faceAt(all, q) === face);
+  const inside = interiorPoint(face);
+  const list = currentPaint();
+  const next = colorAt(list, inside) === state.color ? null : state.color;
+  // Areas painted on exactly this face before are replaced, so the list does not grow.
+  const area = Math.abs(polygonArea(face));
+  const kept = list.filter((q) => !(Math.abs(Math.abs(polygonArea(q.poly)) - area) < 1e-6 && insidePolygon(face, interiorPoint(q.poly))));
+  const after = next === null && colorAt(kept, inside) === null ? kept : [...kept, { poly: face, color: next }];
   remember();
-  change(currentLines(), currentMadePoints(), inFace.length ? seeds.filter((q) => !inFace.includes(q)) : [...seeds, p]);
+  change(currentLines(), currentMadePoints(), after);
+}
+
+/** Chooses the colour to paint with; a colour from the wheel is remembered among the own ones. */
+export function chooseColor(color: string, own = false): void {
+  const customColors = own ? [color, ...state.customColors.filter((c) => c !== color)].slice(0, 3) : state.customColors;
+  setState({ color, customColors, tool: 'fill' });
 }
 
 /** Adds a drawn line to the current task, cut into pieces at grid points and crossings. */
@@ -199,7 +248,7 @@ export const canUndo = (): boolean => (history[currentTask().id]?.length ?? 0) >
 
 export function undo(): void {
   const last = history[currentTask().id]?.pop();
-  if (last) change(last.lines, last.made, last.fills);
+  if (last) change(last.lines, last.made, last.paint);
 }
 
 export const openTask = (index: number): void => setState({ screen: 'task', taskIndex: index, tool: 'ruler' });

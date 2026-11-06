@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkFills } from './check';
+import { checkFills, filledBySeeds } from './check';
 import { boundaryLines, faceAt, faces, interiorPoint, insidePolygon, polygonArea } from './faces';
 import { parseTask } from './task';
 import { type Segment, vec } from './vec';
@@ -51,11 +51,11 @@ describe('checkFills', () => {
   const lowerLeft = [vec(0, 0), vec(12, 0), vec(0, 12)];
 
   it('right when exactly the target area is filled', () => {
-    expect(checkFills(f, [vec(2, 2)], [lowerLeft])).toEqual({ missing: [], extra: [] });
+    expect(checkFills(f, filledBySeeds(f, [vec(2, 2)]), [lowerLeft])).toEqual({ missing: [], extra: [] });
   });
 
   it('reports a missing and an extra fill', () => {
-    const r = checkFills(f, [vec(10, 10)], [lowerLeft]);
+    const r = checkFills(f, filledBySeeds(f, [vec(10, 10)]), [lowerLeft]);
     expect(r.missing).toHaveLength(1);
     expect(r.extra).toHaveLength(1);
   });

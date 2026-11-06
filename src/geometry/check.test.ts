@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tasks } from '../state/tasks';
-import { checkDrawing, checkFills, uncovered } from './check';
+import { checkDrawing, checkFills, filledBySeeds, uncovered } from './check';
 import { boundaryLines, faces, insidePolygon, interiorPoint, polygonArea } from './faces';
 import { addLine, sameSegment } from './segments';
 import { type Segment, type Vec, vec } from './vec';
@@ -73,11 +73,11 @@ describe('checkFills on the task files', () => {
     const all = faces(boundaryLines(t.frame, t.givenLines, drawn, t.gridPoints));
     // The child taps every face that lies in a target area (an area may be cut into several).
     const wanted = all.filter((f) => t.areas.some((a) => insidePolygon(a, interiorPoint(f))));
-    expect(checkFills(all, wanted.map(interiorPoint), t.areas)).toEqual({ missing: [], extra: [] });
+    expect(checkFills(all, filledBySeeds(all, wanted.map(interiorPoint)), t.areas)).toEqual({ missing: [], extra: [] });
     // Those faces make up exactly the target areas.
     const sum = (list: Vec[][]) => list.reduce((n, p) => n + Math.abs(polygonArea(p)), 0);
     expect(sum(wanted)).toBeCloseTo(sum(t.areas), 1);
     // Nothing filled: every area is missing.
-    expect(checkFills(all, [], t.areas).missing.length).toBeGreaterThan(0);
+    expect(checkFills(all, () => false, t.areas).missing.length).toBeGreaterThan(0);
   });
 });
