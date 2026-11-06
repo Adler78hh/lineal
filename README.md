@@ -30,7 +30,7 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Die Zeichnung wird je Aufgabe gemerkt.
 
 - Meilenstein 5: Schnittpunkte
-  - Antippen einer Stelle, an der sich zwei gezeichnete Linien kreuzen oder treffen (auch T- oder L-förmig), zeigt dort ein grünes „+“.
+  - Antippen einer Stelle, an der sich zwei gezeichnete Linien kreuzen oder treffen (auch T- oder L-förmig) oder eine gezeichnete Linie den Rahmen (Kreis oder Seite), eine vorgegebene Strecke oder einen vorgegebenen Kreis kreuzt oder berührt, zeigt dort ein grünes „+“ (z. B. 34-1: die fehlenden Marken oben und unten am Kreis).
   - Antippen des „+“ macht den Schnittpunkt zu einem neuen magnetischen Rasterpunkt (grün statt blau); Antippen woanders schließt das „+“.
   - Neue Punkte wirken wie die alten: Magnet, Linienenden, Zerlegung in Teilstrecken. Sie werden je Aufgabe gemerkt.
 

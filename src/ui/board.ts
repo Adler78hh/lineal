@@ -1,4 +1,4 @@
-import { crossingPoints } from '../geometry/crossings';
+import { tapPoints } from '../geometry/crossings';
 import { edgeStops, strokeToLine } from '../geometry/draw';
 import { RULER, type RulerPose, edgeCoords, rulerCorners, rulerPoint } from '../geometry/ruler';
 import type { Task } from '../geometry/task';
@@ -133,7 +133,7 @@ export class Board {
     this.task = task;
     this.lines = lines;
     this.points = points;
-    if (this.offer && !crossingPoints(lines, points).some((q) => samePoint(q, this.offer!))) this.offer = null;
+    if (this.offer && !tapPoints(lines, task, points).some((q) => samePoint(q, this.offer!))) this.offer = null;
     if (vp) this.model.setScale(vp.scale);
     this.vp = vp;
     this.visible = visible;
@@ -325,7 +325,7 @@ export class Board {
       return;
     }
     let best: Vec | null = null;
-    for (const q of crossingPoints(this.lines, this.points))
+    for (const q of tapPoints(this.lines, this.task!, this.points))
       if (dist(p, q) <= tol && (!best || dist(p, q) < dist(p, best))) best = q;
     this.offer = best;
   }
