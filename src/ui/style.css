@@ -760,3 +760,75 @@ details[open] > summary > .chevron {
 .areas polygon {
   pointer-events: none;
 }
+
+/* "Dünn": all lines of template and drawing at about half their width (grid points stay). */
+.thin-lines .frame polygon,
+.thin-lines .frame circle {
+  stroke-width: 1.5;
+}
+
+.thin-lines .target .frame polygon,
+.thin-lines .target .frame circle {
+  stroke-width: 1;
+}
+
+.thin-lines .target-lines line {
+  stroke-width: 1;
+}
+
+.thin-lines .drawn-lines line,
+.thin-lines .stroke-preview {
+  stroke-width: 1.6;
+}
+
+.thin-lines .given-lines line {
+  stroke-width: 1.5;
+}
+
+.thin-lines .target .given-lines line {
+  stroke-width: 1;
+}
+
+.thin-lines .grid-ticks {
+  stroke-width: 1.5;
+}
+
+.thin-lines .target .grid-ticks {
+  stroke-width: 0.8;
+}
+
+.thin-lines .missing-lines line {
+  stroke-width: 1.6;
+  stroke-dasharray: 2 6;
+}
+
+.thin-lines .correct-lines line,
+.thin-lines .extra-lines line {
+  stroke-width: 7;
+}
+
+.thin-lines .missing-fills polygon {
+  stroke-width: 1;
+}
+
+/* The magnifier in the template's corner makes it as large as the board, and small again. */
+.target .zoom {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 6px;
+}
+
+.stage.big-template {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (orientation: portrait) {
+  .stage.big-template {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}

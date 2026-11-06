@@ -15,6 +15,10 @@ export interface AppState {
   tool: Tool;
   showGrid: boolean;
   showRuler: boolean;
+  /** Thin lines in template and drawing, to see the details of busy figures. */
+  thinLines: boolean;
+  /** The template as large as the board (half and half) instead of small in the corner. */
+  bigTemplate: boolean;
   /** Drawn pieces per task id. */
   drawings: Record<string, Segment[]>;
   /** Crossings the child turned into grid points, per task id. */
@@ -36,6 +40,8 @@ function load(): AppState {
     tool: 'ruler',
     showGrid: true,
     showRuler: true,
+    thinLines: false,
+    bigTemplate: false,
     drawings: {},
     madePoints: {},
     fills: {},
@@ -52,6 +58,8 @@ function load(): AppState {
       tool: 'ruler',
       showGrid: saved.showGrid !== false,
       showRuler: saved.showRuler !== false,
+      thinLines: saved.thinLines === true,
+      bigTemplate: saved.bigTemplate === true,
       drawings: record(saved.drawings),
       madePoints: record(saved.madePoints),
       fills: record(saved.fills),

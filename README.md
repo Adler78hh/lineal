@@ -47,6 +47,11 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Die Lupe mit „Tipp“ im Kasten zeigt, was fehlt: fehlende Stücke gestrichelt, fehlende Flächen grau und – pink – die Kreuzungen, die man als Punkte anlegen muss (`helpPoints`: Linienenden außerhalb des Rasters und Punkte auf dem Weg dorthin, z. B. S1, S2 in 34-1). Noch einmal tippen blendet den Tipp aus.
   - Bei „alles richtig“ gibt es einen Stern und den Knopf „Nächste Aufgabe“. Jede Änderung an der Zeichnung, Antippen des Kastens oder eine andere Aufgabe blendet die Rückmeldung aus.
 
+- Ansicht
+  - „Dünn“ in der Leiste schaltet alle Linien von Vorlage und Zeichenfläche auf etwa halbe Stärke und zurück (Rasterpunkte bleiben gleich groß). Gut für Figuren mit vielen Linien.
+  - Die Lupe oben rechts in der Vorlage macht sie so groß wie die Zeichenfläche (quer nebeneinander, hochkant übereinander) und wieder klein.
+  - Beides wird gemerkt.
+
 - Meilenstein 8: PWA und GitHub Pages
   - Installierbar („Zum Home-Bildschirm“), eigenes Icon, läuft im Vollbild.
   - Offline: Beim ersten Besuch speichert der Service Worker die ganze App (die Dateiliste erzeugt `vite.config.ts` beim Bauen). Seiten kommen zuerst aus dem Netz (für Updates), sonst aus dem Speicher.

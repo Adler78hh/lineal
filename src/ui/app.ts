@@ -38,6 +38,7 @@ interface ToolButton {
 
 const TOOLS: ToolButton[] = [
   { key: 'grid', label: 'Punkte', icon: icons.grid },
+  { key: 'thin', label: 'Dünn', icon: icons.thin },
   { key: 'ruler', label: 'Lineal', icon: icons.ruler },
   { key: 'eraser', label: 'Radierer', icon: icons.eraser },
   { key: 'fill', label: 'Ausmalen', icon: icons.fill },
@@ -66,6 +67,7 @@ export function mountApp(root: HTMLElement): void {
       <main class="stage">
         <section class="card target" aria-label="Vorlage">
           <h2>Vorlage</h2>
+          <button class="btn icon-only zoom" data-zoom aria-label="Vorlage vergrößern"></button>
           <svg class="figure"></svg>
         </section>
         <div class="feedback" role="status" hidden></div>
@@ -82,6 +84,9 @@ export function mountApp(root: HTMLElement): void {
   const taskNo = root.querySelector<HTMLElement>('.task-no')!;
   const taskTitle = root.querySelector<HTMLElement>('.task-title')!;
   const gridBtn = root.querySelector<HTMLButtonElement>('[data-tool="grid"]')!;
+  const thinBtn = root.querySelector<HTMLButtonElement>('[data-tool="thin"]')!;
+  const zoomBtn = root.querySelector<HTMLButtonElement>('[data-zoom]')!;
+  const stage = root.querySelector<HTMLElement>('.stage')!;
   const rulerBtn = root.querySelector<HTMLButtonElement>('[data-tool="ruler"]')!;
   const eraserBtn = root.querySelector<HTMLButtonElement>('[data-tool="eraser"]')!;
   const undoBtn = root.querySelector<HTMLButtonElement>('[data-tool="undo"]')!;
@@ -110,6 +115,8 @@ export function mountApp(root: HTMLElement): void {
   );
   root.querySelector('[data-home]')!.addEventListener('click', openHome);
   gridBtn.addEventListener('click', () => setState({ showGrid: !getState().showGrid }));
+  thinBtn.addEventListener('click', () => setState({ thinLines: !getState().thinLines }));
+  zoomBtn.addEventListener('click', () => setState({ bigTemplate: !getState().bigTemplate }));
   // With another tool on, "Lineal" switches back to the ruler; otherwise it shows or hides it.
   rulerBtn.addEventListener('click', () => {
     const s = getState();
@@ -169,6 +176,12 @@ export function mountApp(root: HTMLElement): void {
     prevBtn.disabled = s.taskIndex === 0;
     nextBtn.disabled = s.taskIndex === tasks.length - 1;
     gridBtn.setAttribute('aria-pressed', String(s.showGrid));
+    thinBtn.setAttribute('aria-pressed', String(s.thinLines));
+    thinBtn.title = s.thinLines ? 'Dicke Linien' : 'Dünne Linien';
+    stage.classList.toggle('thin-lines', s.thinLines);
+    stage.classList.toggle('big-template', s.bigTemplate);
+    zoomBtn.innerHTML = s.bigTemplate ? icons.zoomOut : icons.zoomIn;
+    zoomBtn.setAttribute('aria-label', s.bigTemplate ? 'Vorlage verkleinern' : 'Vorlage vergrößern');
     rulerBtn.setAttribute('aria-pressed', String(s.showRuler && s.tool === 'ruler'));
     eraserBtn.setAttribute('aria-pressed', String(s.tool === 'eraser'));
     fillBtn.setAttribute('aria-pressed', String(s.tool === 'fill'));
