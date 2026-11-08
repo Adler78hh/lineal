@@ -17,14 +17,14 @@ export const STRONG: readonly (readonly [string, string])[] = [
 
 /** The pale colours, each under its strong one (same column in the palette). */
 export const PALE: readonly (readonly [string, string])[] = [
-  ['Hellgrau', '#E3E6E8'],
-  ['Sand', '#EBDCC7'],
-  ['Lachs', '#F7C6B2'],
-  ['Aprikose', '#F9D9B5'],
-  ['Vanille', '#F6E8B1'],
-  ['Lind', '#D3EAC2'],
-  ['Mint', '#CDEDE3'],
-  ['Eisblau', '#CFE6F1'],
-  ['Flieder', '#DDD0EE'],
-  ['Rosa', '#F6CFDD'],
+  ['Hellgrau', '#D2D7DA'],
+  ['Sand', '#E5CEAE'],
+  ['Lachs', '#F8B093'],
+  ['Aprikose', '#FACB95'],
+  ['Vanille', '#F6E292'],
+  ['Lind', '#C2E5A9'],
+  ['Mint', '#B4E7D7'],
+  ['Eisblau', '#B5DAEC'],
+  ['Flieder', '#CCB7E8'],
+  ['Rosa', '#F4B3CA'],
 ];
