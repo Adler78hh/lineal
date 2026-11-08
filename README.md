@@ -48,7 +48,7 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Bei „alles richtig“ gibt es einen Stern und den Knopf „Nächste Aufgabe“. Jede Änderung an der Zeichnung, Antippen des Kastens oder eine andere Aufgabe blendet die Rückmeldung aus.
 
 - Ausmalen
-  - „Ausmalen“ gibt es bei jeder Aufgabe. Darunter erscheint eine Farbleiste: zehn kräftige Farben nach dem Regenbogen, mit Schwarz vorn (Schwarz, Kakao, Rost, Kürbis, Senf, Tannengrün, Petrol, Nachtblau, Pflaume, Beere), zehn blasse, jede unter ihrer kräftigen (Hellgrau, Sand, Lachs, Aprikose, Vanille, Lind, Mint, Eisblau, Flieder, Rosa) und das Farbrad; die letzten drei eigenen Farben werden gemerkt (`src/ui/colors.ts`).
+  - „Ausmalen“ gibt es bei jeder Aufgabe. Darunter erscheint eine Farbleiste: zehn kräftige Farben nach dem Regenbogen, mit Schwarz vorn (Schwarz, Kakao, Mohnrot, Kürbis, Senf, Tannengrün, Petrol, Nachtblau, Pflaume, Beere), zehn blasse, jede unter ihrer kräftigen (Hellgrau, Sand, Lachs, Aprikose, Vanille, Lind, Mint, Eisblau, Flieder, Rosa) und das Farbrad; die letzten drei eigenen Farben werden gemerkt (`src/ui/colors.ts`).
   - Antippen einer Fläche malt sie in der gewählten Farbe aus, mit derselben Farbe noch einmal wird sie wieder weiß.
   - Gespeichert wird die Form der Fläche beim Ausmalen: Radiert man danach eine Linie weg, behält jede Farbfläche ihre Form, nichts verschmilzt.
   - Auf der Startseite zeigt die Kachel das eigene Bild des Kindes (Linien und Farben), sobald es eines gibt.

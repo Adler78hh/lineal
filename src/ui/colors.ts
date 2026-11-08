@@ -5,7 +5,7 @@
 export const STRONG: readonly (readonly [string, string])[] = [
   ['Schwarz', '#22262B'],
   ['Kakao', '#7A5238'],
-  ['Rost', '#B8543A'],
+  ['Mohnrot', '#D23A3A'],
   ['Kürbis', '#DE7A34'],
   ['Senf', '#D4A12A'],
   ['Tannengrün', '#3E7A55'],
