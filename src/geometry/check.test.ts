@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tasks } from '../state/tasks';
+import { allTasks as tasks } from '../state/tasks';
 import { checkDrawing, checkFills, filledBySeeds, uncovered } from './check';
 import { boundaryLines, faces, insidePolygon, interiorPoint, polygonArea } from './faces';
 import { addLine, sameSegment } from './segments';

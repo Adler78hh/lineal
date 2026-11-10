@@ -207,9 +207,10 @@ export function mountApp(root: HTMLElement): void {
     }
     const task = currentTask();
     const place = placeOf(s.taskIndex);
-    taskNo.textContent = `${place.page === null ? '' : `Seite ${place.page} · `}Aufgabe ${place.n} von ${place.of}`;
-    taskTitle.textContent = task.title;
-    taskTitle.title = task.title;
+    taskNo.textContent = `${place.section ? `${place.section.nr} · ` : ''}Aufgabe ${place.n} von ${place.of}`;
+    // The page in the book stays visible, so the task can be found there.
+    taskTitle.textContent = place.page === null ? task.title : `${task.title} · S. ${place.page}`;
+    taskTitle.title = place.section ? `${place.section.nr} ${place.section.title}: ${task.title}` : task.title;
     prevBtn.disabled = s.taskIndex === 0;
     nextBtn.disabled = s.taskIndex === tasks.length - 1;
     gridBtn.setAttribute('aria-pressed', String(s.showGrid));

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { blockOfPage, blocks, pageOf, pagesOf, placeOf } from './blocks';
-import { tasks } from './tasks';
+import { blocks, hiddenTasks, pageOf, placeOf, sectionOf } from './blocks';
+import { allTasks, tasks } from './tasks';
 
-describe('blocks', () => {
-  it('are the five parts of the book, in order and without overlap', () => {
+describe('chapters and sections', () => {
+  it('are the five chapters of the book, in order', () => {
     expect(blocks.map((b) => b.title)).toEqual([
       'Einstieg ins geometrische Zeichnen',
       'Sterne',
@@ -11,32 +11,34 @@ describe('blocks', () => {
       'Hüllkurven',
       '3-D-Bilder',
     ]);
-    for (let i = 0; i < blocks.length; i++) {
-      expect(blocks[i].from).toBeLessThanOrEqual(blocks[i].to);
-      if (i > 0) expect(blocks[i].from).toBeGreaterThan(blocks[i - 1].to);
-    }
+    expect(blocks.map((b) => b.sections.length)).toEqual([6, 4, 5, 4, 3]);
   });
 
-  it('every task is on a page of exactly one block', () => {
-    for (const t of tasks) {
-      const page = pageOf(t);
-      expect(page, t.id).not.toBeNull();
-      expect(blocks.filter((b) => page! >= b.from && page! <= b.to), t.id).toHaveLength(1);
-    }
+  it('sections are numbered by chapter: 1.1 … 1.6, 2.1 …', () => {
+    blocks.forEach((b, i) => b.sections.forEach((s, j) => expect(s.nr).toBe(`${i + 1}.${j + 1}`)));
+    expect(blocks[0].sections[0].title).toBe('Erste Übungen');
   });
 
-  it('every page of the book has tasks, each in its block; page 5 holds the ten first tasks', () => {
-    expect(blockOfPage(5)?.id).toBe('einstieg');
-    const pages = pagesOf(blocks[0]);
-    expect(pages.map((p) => p.page)).toEqual(Array.from({ length: 16 }, (_, i) => 5 + i));
-    expect(pages[0].tasks.map((t) => t.task.id)).toEqual(tasks.slice(0, 10).map((t) => t.id));
-    for (const b of blocks) {
-      const { from, to } = b;
-      expect(pagesOf(b).map((p) => p.page)).toEqual(Array.from({ length: to - from + 1 }, (_, i) => from + i));
-    }
+  it('every task is in exactly one section or among the hidden repetitions', () => {
+    const listed = blocks.flatMap((b) => b.sections.flatMap((s) => s.tasks.map((t) => t.task.id)));
+    expect(new Set(listed).size).toBe(listed.length);
+    expect([...listed, ...hiddenTasks].sort()).toEqual(allTasks.map((t) => t.id).sort());
+    expect(listed).toEqual(tasks.map((t) => t.id));
   });
 
-  it('numbers tasks within their page', () => {
-    expect(placeOf(2)).toEqual({ page: 5, n: 3, of: 10 });
+  it('keeps the order of the book inside a section', () => {
+    for (const b of blocks)
+      for (const s of b.sections) {
+        const ids = s.tasks.map((t) => t.task.id);
+        expect([...ids].sort((x, y) => x.localeCompare(y, 'de', { numeric: true })), s.nr).toEqual(ids);
+      }
+  });
+
+  it('numbers tasks within their section and knows their page', () => {
+    expect(placeOf(2)).toMatchObject({ n: 3, of: 18, page: 5 });
+    expect(placeOf(2).section?.nr).toBe('1.1');
+    const i = tasks.findIndex((t) => t.id === 's34-01');
+    expect(sectionOf(i)?.nr).toBe('2.4');
+    expect(pageOf(tasks[i])).toBe(34);
   });
 });

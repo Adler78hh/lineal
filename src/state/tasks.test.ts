@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { segmentIntersection } from '../geometry/intersect';
 import type { Task } from '../geometry/task';
 import { type Segment, type Vec, samePoint } from '../geometry/vec';
-import { tasks } from './tasks';
+import { allTasks, tasks } from './tasks';
 
 /**
  * Points a child can reach with the ruler: the grid points; crossings of lines between two
@@ -51,19 +51,20 @@ function onTwoLines(p: Vec, pool: readonly Vec[]): boolean {
 }
 
 describe('task files', () => {
-  it('loads the tasks in order, the ten of page 5 first', () => {
-    expect(tasks.slice(0, 10).map((t) => t.id)).toEqual(Array.from({ length: 10 }, (_, i) => `s05-${String(i + 1).padStart(2, '0')}`));
-    const ids = tasks.map((t) => t.id);
+  it('loads all task files sorted by id, and shows them by section, the ten of page 5 first', () => {
+    const ids = allTasks.map((t) => t.id);
     expect([...ids].sort((a, b) => a.localeCompare(b, 'de', { numeric: true }))).toEqual(ids);
     expect(ids).toHaveLength(256);
+    expect(tasks).toHaveLength(251);
+    expect(tasks.slice(0, 10).map((t) => t.id)).toEqual(Array.from({ length: 10 }, (_, i) => `s05-${String(i + 1).padStart(2, '0')}`));
   });
 
   it('has unique ids', () => {
-    expect(new Set(tasks.map((t) => t.id)).size).toBe(tasks.length);
+    expect(new Set(allTasks.map((t) => t.id)).size).toBe(allTasks.length);
   });
 
   // A line can only be drawn exactly if the ruler can snap to both of its ends.
-  it.each(tasks.map((t) => [t.id, t] as const))('%s: every target line can be drawn with the ruler', (_, t) => {
+  it.each(allTasks.map((t) => [t.id, t] as const))('%s: every target line can be drawn with the ruler', (_, t) => {
     // Most tasks end every line on a grid point; only search further when needed (it is slow).
     const ends = t.targetLines.flatMap((l) => [l.a, l.b]);
     if (ends.every((e) => t.gridPoints.some((p) => samePoint(p, e)))) return;

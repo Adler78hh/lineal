@@ -64,31 +64,55 @@ einem virtuellen Lineal nach. Bedienung mit Finger oder Maus, Oberfläche auf De
   - Offline: Beim ersten Besuch speichert der Service Worker die ganze App (die Dateiliste erzeugt `vite.config.ts` beim Bauen). Seiten kommen zuerst aus dem Netz (für Updates), sonst aus dem Speicher.
   - Ältere iPads: Build für Safari 14, Hinweis statt weißer Seite, wenn die App nicht startet.
 
-## Startseite und Blöcke
+## Startseite, Kapitel und Unterkapitel
 
-Die Startseite zeigt die fünf Blöcke des Buchs mit ihren Seiten. Blöcke und Seiten lassen sich
-auf- und zuklappen (das Gerät merkt sich, was offen ist). Jede Aufgabe ist ein kleines Bild
-ihrer Figur, gelöste Aufgaben haben einen Stern. Das Haus oben links führt zurück.
+Die Startseite zeigt die fünf Kapitel des Buchs mit ihren Unterkapiteln, nach Inhalt gruppiert
+(22 statt der 74 Buchseiten). Kapitel und Unterkapitel lassen sich auf- und zuklappen (das Gerät
+merkt sich, was offen ist). Jede Aufgabe ist ein kleines Bild ihrer Figur – oder des eigenen
+Bildes des Kindes –, gelöste Aufgaben haben einen Stern. Das Haus oben links führt zurück.
 
-Das Druckersymbol einer Seite lädt ein Arbeitsblatt als PDF herunter (`Lineal-Seite-06.pdf`):
-je Aufgabe links die Vorlage, rechts das leere Raster zum Zeichnen mit einem echten Lineal,
-drei Aufgaben pro A4-Blatt, oben Platz für den Namen. Das PDF entsteht im Gerät
+Innerhalb eines Unterkapitels bleibt die Reihenfolge des Buchs; die Pfeile „vorige/nächste
+Aufgabe“ folgen dieser Reihenfolge über alle Unterkapitel. Die Kopfzeile zeigt z. B.
+„2.4 · Aufgabe 5 von 8“ und „Doppelpfeil · S. 34“ (die Buchseite).
+
+Das Druckersymbol eines Unterkapitels lädt ein Arbeitsblatt als PDF herunter (`Lineal-2-4.pdf`):
+je Aufgabe links die Vorlage (mit Buchseite), rechts das leere Raster zum Zeichnen mit einem
+echten Lineal, drei Aufgaben pro A4-Blatt, oben Platz für den Namen. Das PDF entsteht im Gerät
 (`src/print/`), ohne Server und ohne Bibliothek.
 
-Die Blöcke stehen in `tasks/blocks.json` (Titel und Seitenbereich). Zu welcher Seite eine Aufgabe
-gehört, ergibt sich aus ihrer `id`: `s05-03` ist die 3. Aufgabe auf Seite 5.
+Die Gliederung steht in `tasks/blocks.json`: Kapitel mit ihren Unterkapiteln (Nummer, Name,
+Liste der Aufgaben-`id`s in der gezeigten Reihenfolge). Unter `hidden` stehen Wiederholungen
+des Buchs, die die App nicht zeigt (42-1 wie 37-1, 45-1 bis 45-4 wie Seite 39). Zu welcher
+Buchseite eine Aufgabe gehört, ergibt sich aus ihrer `id`: `s05-03` ist die 3. Aufgabe auf Seite 5.
 
-| Block | Seiten |
-| --- | --- |
-| Einstieg ins geometrische Zeichnen | 5–20 |
-| Sterne | 21–36 |
-| Muster in Quadraten | 37–50 |
-| Hüllkurven | 51–64 |
-| 3-D-Bilder | 65–78 |
+| Kapitel | Unterkapitel | Aufgaben |
+| --- | --- | --- |
+| 1 Einstieg ins geometrische Zeichnen | 1.1 Erste Übungen | 18 |
+| 1  | 1.2 Felder, Kreuze und Rauten | 18 |
+| 1  | 1.3 Erste Ausmalbilder | 21 |
+| 1  | 1.4 Strahlen und Knicklinien | 7 |
+| 1  | 1.5 Sehnen im Kreis | 13 |
+| 1  | 1.6 Fadenbilder und Fächer | 13 |
+| 2 Sterne | 2.1 Sechs- und Achtsterne im Kreis | 16 |
+| 2  | 2.2 Fünf-, Neun- und Zehnsterne | 7 |
+| 2  | 2.3 Sterne im Quadrat | 15 |
+| 2  | 2.4 Windräder, Pfeile und Windrosen | 8 |
+| 3 Muster in Quadraten | 3.1 Felder und Kreuze | 10 |
+| 3  | 3.2 Rauten | 11 |
+| 3  | 3.3 Sterne und Strahlen | 10 |
+| 3  | 3.4 Gitter, Flechtmuster und Windräder | 9 |
+| 3  | 3.5 Pyramiden, Rahmen und Streifen | 9 |
+| 4 Hüllkurven | 4.1 Fadenwinkel und Bögen | 8 |
+| 4  | 4.2 Sterne aus Fadenwinkeln | 5 |
+| 4  | 4.3 Kreise in Vielecken | 8 |
+| 4  | 4.4 Fächer und Sehnenbilder | 10 |
+| 5 3-D-Bilder | 5.1 Würfel, Kästen und Schachteln | 14 |
+| 5  | 5.2 Rahmen und unmögliche Figuren | 9 |
+| 5  | 5.3 Sterne, Rauten und Flechtmuster | 12 |
 
 ## Aufgaben
 
-Jede Datei in `tasks/` (außer `blocks.json`) ist eine Aufgabe; sie werden nach `id` sortiert.
+Jede Datei in `tasks/` (außer `blocks.json`) ist eine Aufgabe; gezeigt werden sie in der Reihenfolge von `blocks.json`.
 Koordinaten 0–12, Ursprung unten links.
 
 ```json

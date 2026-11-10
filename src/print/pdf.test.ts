@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blocks, pagesOf } from '../state/blocks';
+import { blocks } from '../state/blocks';
 import { PdfDoc, pdfString } from './pdf';
 import { worksheet } from './worksheet';
 
@@ -33,9 +33,10 @@ describe('pdf', () => {
   });
 
   it('a worksheet puts three tasks on each sheet', () => {
-    const page6 = pagesOf(blocks[0]).find((p) => p.page === 6)!;
-    const pdf = text(worksheet(6, blocks[0].title, page6.tasks.map(({ task }, i) => ({ task, n: i + 1 }))));
-    expect(checkXref(pdf)).toBe(Math.ceil(page6.tasks.length / 3));
-    expect(pdf).toContain('(Seite 6)');
+    const sec = blocks[0].sections[0];
+    const pdf = text(worksheet(sec.nr, sec.title, sec.tasks.map(({ task }, i) => ({ task, n: i + 1 }))));
+    expect(checkXref(pdf)).toBe(Math.ceil(sec.tasks.length / 3));
+    expect(pdf).toContain('(1.1)');
+    expect(pdf).toContain('(Erste \\334bungen)');
   });
 });

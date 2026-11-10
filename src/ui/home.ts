@@ -1,11 +1,10 @@
 import { worksheet } from '../print/worksheet';
-import { type Block, type Page, blocks, pagesOf } from '../state/blocks';
+import { type Section, blocks } from '../state/blocks';
 import type { AppState } from '../state/store';
 import { tasks } from '../state/tasks';
 import { renderFigure } from './figure';
 import { icons } from './icons';
 
-const pageRange = (from: number, to: number) => `Seite ${from}–${to}`;
 const taskCount = (n: number) => (n === 1 ? '1 Aufgabe' : `${n} Aufgaben`);
 
 // What is open on the start page; remembered in this browser only, it is just a convenience.
@@ -31,31 +30,32 @@ function setOpen(key: string, isOpen: boolean): void {
   }
 }
 
-/** Downloads the worksheet of a page as a PDF. */
-function printPage(block: Block, page: Page): void {
-  const bytes = worksheet(page.page, block.title, page.tasks.map(({ task }, i) => ({ task, n: i + 1 })));
+/** Downloads the worksheet of a section as a PDF. */
+function printSection(chapter: string, section: Section): void {
+  const bytes = worksheet(section.nr, `${section.title} · ${chapter}`, section.tasks.map(({ task }, i) => ({ task, n: i + 1 })));
   const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Lineal-Seite-${String(page.page).padStart(2, '0')}.pdf`;
+  a.download = `Lineal-${section.nr.replace('.', '-')}.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-function pageHtml(block: Block, p: Page, state: AppState): string {
-  const solved = p.tasks.filter(({ task }) => state.solved[task.id]).length;
+function sectionHtml(s: Section, state: AppState): string {
+  const solved = s.tasks.filter(({ task }) => state.solved[task.id]).length;
+  const key = `sec:${s.nr}`;
   return `
-    <details class="page" data-key="page:${p.page}"${open.has(`page:${p.page}`) ? ' open' : ''}>
+    <details class="page" data-key="${key}"${open.has(key) ? ' open' : ''}>
       <summary>
         <span class="chevron" aria-hidden="true">${icons.next}</span>
-        <span class="page-name">Seite ${p.page}</span>
-        <span class="page-count">${taskCount(p.tasks.length)}${solved ? ` · ${solved} ⭐` : ''}</span>
-        <button class="btn icon-only print" data-print="${block.id}:${p.page}" aria-label="Seite ${p.page} als PDF drucken" title="Als PDF drucken">${icons.print}</button>
+        <span class="page-name">${s.nr} ${s.title}</span>
+        <span class="page-count">${taskCount(s.tasks.length)}${solved ? ` · ${solved} ⭐` : ''}</span>
+        <button class="btn icon-only print" data-print="${s.nr}" aria-label="${s.nr} ${s.title} als PDF drucken" title="Als PDF drucken">${icons.print}</button>
       </summary>
       <div class="task-grid">
-        ${p.tasks
+        ${s.tasks
           .map(
             ({ task, index }, n) => `
           <button class="task-tile${state.solved[task.id] ? ' solved' : ''}" data-index="${index}" title="${task.title}">
@@ -87,7 +87,7 @@ function drawThumbs(el: Element, state: AppState): void {
 }
 
 /**
- * The start page: the blocks of the book, each with its pages. A page opens to show its tasks
+ * The start page: the chapters of the book, each with its sections. A section opens to show its tasks
  * as small pictures of their figures; a star marks the solved ones. The printer makes a worksheet.
  */
 export function renderHome(el: HTMLElement, state: AppState, onOpen: (index: number) => void): void {
@@ -101,17 +101,17 @@ export function renderHome(el: HTMLElement, state: AppState, onOpen: (index: num
     </header>
     ${blocks
       .map((b, i) => {
-        const pages = pagesOf(b);
         const key = `block:${b.id}`;
+        const count = b.sections.reduce((n, sec) => n + sec.tasks.length, 0);
         return `
       <details class="block card" data-key="${key}"${open.has(key) ? ' open' : ''}>
         <summary>
           <span class="chevron" aria-hidden="true">${icons.next}</span>
           <span class="block-no">${i + 1}</span>
           <span class="block-title">${b.title}</span>
-          <span class="block-pages">${pageRange(b.from, b.to)}</span>
+          <span class="block-pages">${b.sections.length} Unterkapitel · ${taskCount(count)}</span>
         </summary>
-        ${pages.length ? pages.map((p) => pageHtml(b, p, state)).join('') : '<p class="soon">Kommt bald</p>'}
+        ${b.sections.length ? b.sections.map((sec) => sectionHtml(sec, state)).join('') : '<p class="soon">Kommt bald</p>'}
       </details>`;
       })
       .join('')}`;
@@ -127,9 +127,8 @@ export function renderHome(el: HTMLElement, state: AppState, onOpen: (index: num
       // The button sits in the summary: printing should not also open or close the page.
       e.preventDefault();
       e.stopPropagation();
-      const [blockId, page] = btn.dataset.print!.split(':');
-      const block = blocks.find((b) => b.id === blockId)!;
-      printPage(block, pagesOf(block).find((p) => p.page === Number(page))!);
+      const block = blocks.find((b) => b.sections.some((sec) => sec.nr === btn.dataset.print))!;
+      printSection(block.title, block.sections.find((sec) => sec.nr === btn.dataset.print)!);
     }),
   );
   el.querySelectorAll<HTMLButtonElement>('.task-tile').forEach((tile) =>

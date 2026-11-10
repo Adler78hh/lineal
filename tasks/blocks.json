@@ -1,7 +1,79 @@
-[
-  { "id": "einstieg", "title": "Einstieg ins geometrische Zeichnen", "pages": [5, 20] },
-  { "id": "sterne", "title": "Sterne", "pages": [21, 36] },
-  { "id": "muster", "title": "Muster in Quadraten", "pages": [37, 50] },
-  { "id": "huellkurven", "title": "Hüllkurven", "pages": [51, 64] },
-  { "id": "3d", "title": "3-D-Bilder", "pages": [65, 78] }
-]
+{
+  "chapters": [
+    {
+      "id": "einstieg",
+      "title": "Einstieg ins geometrische Zeichnen",
+      "sections": [
+        { "nr": "1.1", "title": "Erste Übungen",
+          "tasks": ["s05-01", "s05-02", "s05-03", "s05-04", "s05-05", "s05-06", "s05-07", "s05-08", "s05-09", "s05-10", "s06-01", "s06-02", "s06-03", "s06-04", "s06-05", "s06-06", "s06-07", "s06-08"] },
+        { "nr": "1.2", "title": "Felder, Kreuze und Rauten",
+          "tasks": ["s07-01", "s07-02", "s07-03", "s07-04", "s07-05", "s07-06", "s08-01", "s08-02", "s08-03", "s08-04", "s08-05", "s08-06", "s09-01", "s09-02", "s09-03", "s09-04", "s21-01", "s21-02"] },
+        { "nr": "1.3", "title": "Erste Ausmalbilder",
+          "tasks": ["s10-01", "s10-02", "s10-03", "s10-04", "s10-05", "s10-06", "s10-07", "s10-08", "s10-09", "s16-01", "s16-02", "s16-03", "s16-04", "s16-05", "s16-06", "s16-07", "s16-08", "s16-09", "s16-10", "s16-11", "s16-12"] },
+        { "nr": "1.4", "title": "Strahlen und Knicklinien",
+          "tasks": ["s11-01", "s11-02", "s11-03", "s13-01", "s13-02", "s13-03", "s13-04"] },
+        { "nr": "1.5", "title": "Sehnen im Kreis",
+          "tasks": ["s14-01", "s15-01", "s15-02", "s15-03", "s15-04", "s15-05", "s15-06", "s15-07", "s15-08", "s16-13", "s16-14", "s18-01", "s18-02"] },
+        { "nr": "1.6", "title": "Fadenbilder und Fächer",
+          "tasks": ["s12-01", "s12-02", "s14-02", "s16-15", "s17-01", "s17-02", "s17-03", "s19-01", "s19-02", "s20-01", "s20-02", "s20-03", "s20-04"] }
+      ]
+    },
+    {
+      "id": "sterne",
+      "title": "Sterne",
+      "sections": [
+        { "nr": "2.1", "title": "Sechs- und Achtsterne im Kreis",
+          "tasks": ["s22-01", "s22-02", "s22-03", "s22-04", "s23-01", "s23-02", "s23-03", "s23-04", "s24-01", "s24-02", "s25-01", "s25-02", "s25-03", "s27-01", "s28-02", "s28-03"] },
+        { "nr": "2.2", "title": "Fünf-, Neun- und Zehnsterne",
+          "tasks": ["s26-01", "s26-02", "s28-01", "s31-01", "s35-01", "s35-02", "s35-03"] },
+        { "nr": "2.3", "title": "Sterne im Quadrat",
+          "tasks": ["s27-02", "s29-01", "s29-02", "s29-03", "s29-04", "s30-01", "s30-02", "s30-03", "s30-04", "s30-05", "s30-06", "s30-07", "s30-08", "s33-02", "s33-03"] },
+        { "nr": "2.4", "title": "Windräder, Pfeile und Windrosen",
+          "tasks": ["s31-02", "s32-01", "s32-02", "s33-01", "s34-01", "s34-02", "s34-03", "s36-01"] }
+      ]
+    },
+    {
+      "id": "muster",
+      "title": "Muster in Quadraten",
+      "sections": [
+        { "nr": "3.1", "title": "Felder und Kreuze",
+          "tasks": ["s37-01", "s37-02", "s40-03", "s41-03", "s46-01", "s46-02", "s46-03", "s46-04", "s47-04", "s49-03"] },
+        { "nr": "3.2", "title": "Rauten",
+          "tasks": ["s38-02", "s38-03", "s39-02", "s39-03", "s39-04", "s40-04", "s42-03", "s42-04", "s44-01", "s48-03", "s50-04"] },
+        { "nr": "3.3", "title": "Sterne und Strahlen",
+          "tasks": ["s37-03", "s37-04", "s38-01", "s40-01", "s41-01", "s41-04", "s42-02", "s43-03", "s43-04", "s48-01"] },
+        { "nr": "3.4", "title": "Gitter, Flechtmuster und Windräder",
+          "tasks": ["s41-02", "s43-01", "s43-02", "s47-02", "s47-03", "s48-02", "s48-04", "s50-01", "s50-03"] },
+        { "nr": "3.5", "title": "Pyramiden, Rahmen und Streifen",
+          "tasks": ["s39-01", "s40-02", "s44-02", "s44-03", "s47-01", "s49-01", "s49-02", "s49-04", "s50-02"] }
+      ]
+    },
+    {
+      "id": "huellkurven",
+      "title": "Hüllkurven",
+      "sections": [
+        { "nr": "4.1", "title": "Fadenwinkel und Bögen",
+          "tasks": ["s53-01", "s55-01", "s55-02", "s55-03", "s57-02", "s59-02", "s60-01", "s60-02"] },
+        { "nr": "4.2", "title": "Sterne aus Fadenwinkeln",
+          "tasks": ["s51-01", "s56-02", "s59-01", "s62-01", "s64-01"] },
+        { "nr": "4.3", "title": "Kreise in Vielecken",
+          "tasks": ["s52-02", "s54-02", "s56-01", "s56-03", "s61-02", "s62-02", "s63-01", "s64-02"] },
+        { "nr": "4.4", "title": "Fächer und Sehnenbilder",
+          "tasks": ["s51-02", "s52-01", "s53-02", "s54-01", "s57-01", "s58-01", "s58-02", "s58-03", "s61-01", "s63-02"] }
+      ]
+    },
+    {
+      "id": "3d",
+      "title": "3-D-Bilder",
+      "sections": [
+        { "nr": "5.1", "title": "Würfel, Kästen und Schachteln",
+          "tasks": ["s65-01", "s66-01", "s66-02", "s67-01", "s67-02", "s68-01", "s70-01", "s70-02", "s70-03", "s73-01", "s74-02", "s75-01", "s76-01", "s77-02"] },
+        { "nr": "5.2", "title": "Rahmen und unmögliche Figuren",
+          "tasks": ["s68-02", "s69-01", "s69-02", "s69-03", "s69-04", "s73-02", "s74-01", "s75-02", "s76-02"] },
+        { "nr": "5.3", "title": "Sterne, Rauten und Flechtmuster",
+          "tasks": ["s65-02", "s67-03", "s67-04", "s71-01", "s71-02", "s71-03", "s71-04", "s72-01", "s72-02", "s77-01", "s78-01", "s78-02"] }
+      ]
+    }
+  ],
+  "hidden": ["s42-01", "s45-01", "s45-02", "s45-03", "s45-04"]
+}

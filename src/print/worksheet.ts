@@ -88,8 +88,8 @@ export interface SheetItem {
   n: number;
 }
 
-/** A worksheet for one page of the book: three tasks per A4 sheet, template beside the grid. */
-export function worksheet(page: number, blockTitle: string, items: readonly SheetItem[]): Uint8Array {
+/** A worksheet for one section (e.g. "2.4"): three tasks per A4 sheet, template beside the grid. */
+export function worksheet(heading: string, subtitle: string, items: readonly SheetItem[]): Uint8Array {
   const pdf = new PdfDoc();
   const perSheet = Math.floor((A4.h - 2 * MARGIN - HEADER) / ROW);
   const sheets = Math.max(1, Math.ceil(items.length / perSheet));
@@ -97,8 +97,8 @@ export function worksheet(page: number, blockTitle: string, items: readonly Shee
     pdf.addPage();
     const top = A4.h - MARGIN;
     pdf.style(0.3);
-    pdf.text({ x: MARGIN, y: top - 6 }, 16, `Seite ${page}`, true);
-    pdf.text({ x: MARGIN + 30, y: top - 6 }, 10, blockTitle);
+    pdf.text({ x: MARGIN, y: top - 6 }, 16, heading, true);
+    pdf.text({ x: MARGIN + 14, y: top - 6 }, 10, subtitle);
     pdf.text({ x: A4.w - MARGIN - 62, y: top - 6 }, 10, 'Name:');
     pdf.line({ x: A4.w - MARGIN - 50, y: top - 7 }, { x: A4.w - MARGIN, y: top - 7 });
     pdf.style(0.2, 0.6);
@@ -108,7 +108,9 @@ export function worksheet(page: number, blockTitle: string, items: readonly Shee
       const rowTop = top - HEADER - i * ROW;
       pdf.style(0.3);
       pdf.text({ x: MARGIN, y: rowTop - 4 }, 12, `${n}`, true);
-      pdf.text({ x: MARGIN + 8, y: rowTop - 4 }, 10, task.title);
+      // The page in the book, so the sheet can be put next to it.
+      const page = /^s(\d+)-/.exec(task.id);
+      pdf.text({ x: MARGIN + 8, y: rowTop - 4 }, 10, page ? `${task.title} (S. ${Number(page[1])})` : task.title);
       const y = rowTop - 10 - TEMPLATE.h;
       drawTemplate(pdf, task, { x: MARGIN, y, ...TEMPLATE });
       drawGrid(pdf, task, { x: MARGIN + TEMPLATE.w + GAP, y, ...GRID });
