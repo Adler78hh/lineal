@@ -195,6 +195,7 @@ npm install
 npm run dev      # Entwicklungsserver
 npm test         # Geometrie-Tests
 npm run build    # statische Seite in dist/
+npm run single   # die ganze App in einer Datei: dist-single/lineal.html (zum Einbinden oder Weitergeben)
 ```
 
 ## Aufbau
