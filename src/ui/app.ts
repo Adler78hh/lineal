@@ -24,6 +24,7 @@ import {
   undo,
 } from '../state/store';
 import { placeOf } from '../state/blocks';
+import { openColorPicker } from './colorPicker';
 import { PALE, STRONG } from './colors';
 import { tasks } from '../state/tasks';
 import { renderFigure } from './figure';
@@ -76,7 +77,7 @@ export function mountApp(root: HTMLElement): void {
             ),
           )
           .join('')}
-        <label class="swatch wheel" title="Eigene Farbe" aria-label="Eigene Farbe"><input type="color" value="#327a86" /></label>
+        <button class="swatch wheel" data-wheel title="Eigene Farbe" aria-label="Eigene Farbe wählen"></button>
         <span class="own-colors"></span>
       </div>
       <main class="stage">
@@ -110,7 +111,7 @@ export function mountApp(root: HTMLElement): void {
   const feedbackBox = root.querySelector<HTMLElement>('.feedback')!;
   const palette = root.querySelector<HTMLElement>('.palette')!;
   const ownColors = palette.querySelector<HTMLElement>('.own-colors')!;
-  const wheel = palette.querySelector<HTMLInputElement>('input[type="color"]')!;
+  const wheel = palette.querySelector<HTMLButtonElement>('[data-wheel]')!;
   fillBtn.insertAdjacentHTML('beforeend', '<span class="current-color" aria-hidden="true"></span>');
   const currentColor = fillBtn.querySelector<HTMLElement>('.current-color')!;
 
@@ -149,8 +150,17 @@ export function mountApp(root: HTMLElement): void {
     const b = (e.target as Element).closest<HTMLElement>('[data-color]');
     if (b) chooseColor(b.dataset.color!);
   });
-  // The colour wheel: the chosen colour is painted with and kept among the own colours.
-  wheel.addEventListener('change', () => chooseColor(wheel.value.toUpperCase(), true));
+  // The colour window: each colour counts at once; the last one is kept among the own colours on closing.
+  wheel.addEventListener('click', () =>
+    openColorPicker(
+      wheel,
+      getState().color,
+      (c) => chooseColor(c),
+      (last) => {
+        if (last) chooseColor(last, true);
+      },
+    ),
+  );
   checkBtn.addEventListener('click', () => {
     const task = currentTask();
     const lines = currentLines();
