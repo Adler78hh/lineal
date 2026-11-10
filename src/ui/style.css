@@ -6,10 +6,10 @@
   --card: #ffffff;
   --ink: #23324a;
   --muted: #6b7689;
-  --accent: #2f6fb3;
-  --accent-soft: #dfeaf7;
+  --accent: #327a86;
+  --accent-soft: #dceff1;
   --frame: #23324a;
-  --grid-point: #2f6fb3;
+  --grid-point: #327a86;
   --target-line: #23324a;
   --snap: #f08a00;
   --radius: 16px;
@@ -401,7 +401,7 @@ body {
 
 /* Feedback after "Prüfen" */
 .missing-lines line {
-  stroke: #7f9cb3;
+  stroke: #7aa6ad;
   stroke-width: 3;
   stroke-linecap: round;
   stroke-dasharray: 3 9;
@@ -745,7 +745,7 @@ details[open] > summary > .chevron {
 
 .missing-fills polygon {
   fill: rgb(43 52 66 / 0.18);
-  stroke: #7f9cb3;
+  stroke: #7aa6ad;
   stroke-width: 2;
   stroke-dasharray: 3 7;
 }
@@ -907,7 +907,7 @@ details[open] > summary > .chevron {
 }
 
 .picker {
-  --petrol: #327a86;
+  --petrol: var(--accent);
   --cell: 30px;
   position: fixed;
   z-index: 21;

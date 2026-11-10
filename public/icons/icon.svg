@@ -9,6 +9,6 @@
     <rect x="36" y="300" width="440" height="78" rx="8" fill="#8fd0dc" fill-opacity="0.85" stroke="#17697a" stroke-width="6"/>
     <path d="M76 300v26M116 300v16M156 300v26M196 300v16M236 300v26M276 300v16M316 300v26M356 300v16M396 300v26M436 300v16" stroke="#17697a" stroke-width="6" stroke-linecap="round"/>
   </g>
-  <g fill="#2f6fb3"><circle cx="96" cy="96" r="16"/><circle cx="416" cy="416" r="16"/><circle cx="96" cy="202" r="13"/><circle cx="416" cy="202" r="13"/><circle cx="96" cy="310" r="13"/><circle cx="416" cy="310" r="13"/></g>
+  <g fill="#327a86"><circle cx="96" cy="96" r="16"/><circle cx="416" cy="416" r="16"/><circle cx="96" cy="202" r="13"/><circle cx="416" cy="202" r="13"/><circle cx="96" cy="310" r="13"/><circle cx="416" cy="310" r="13"/></g>
   <circle cx="416" cy="416" r="27" fill="none" stroke="#f08a00" stroke-width="9"/>
 </svg>
